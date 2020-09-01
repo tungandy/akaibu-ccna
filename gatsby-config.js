@@ -4,7 +4,7 @@ module.exports = {
     defaultTitle: `AKAIBU CCNA`,
     siteTitleShort: ``,
     siteDescription: `Learn CCNA`,
-    siteUrl: `https://rocketdocs.netlify.com`,
+    siteUrl: `https://akaibu-ccna.netlify.app/`,
     siteAuthor: `@AT`,
     siteImage: `/banner.png`,
     siteLanguage: `en`,
@@ -18,8 +18,8 @@ module.exports = {
       options: {
         configPath: `src/config`,
         docsPath: `src/docs`,
-        githubUrl: `https://github.com/rocketseat/gatsby-themes`,
-        baseDir: `examples/gatsby-theme-docs`,
+        githubUrl: `https://github.com/tungandy/akaibu-ccna`,
+        baseDir: ``,
       },
     },
     {
