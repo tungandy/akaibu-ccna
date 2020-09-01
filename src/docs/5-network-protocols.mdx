@@ -4,56 +4,382 @@ title: 'Network Protocols'
 
 ## TCP/IP suite of protocols
 
+The TCP/IP suite is a set of protocols used on computer networks today (most notably on the Internet). It provides an end-to-end connectivity by specifying how data should be packetized, addressed, transmitted, routed and received on a TCP/IP network. This functionality is organized into four abstraction layers and each protocol in the suite resides in a particular layer.
+
+The TCP/IP suite is named after its most important protocols, the Transmission Control Protocol (TCP) and the Internet Protocol (IP). Some of the protocols included in the TCP/IP suite are:
+
+- **ARP (Address Resolution Protocol)** – used to associate an IP address with a MAC address.
+- **IP (Internet Protocol)** – used to deliver packets from the source host to the destination host based on the IP addresses.
+- **ICMP (Internet Control Message Protocol)** – used to detects and reports network error conditions. Used in ping.
+- **TCP (Transmission Control Protocol)** – a connection-oriented protocol that enables reliable data transfer between two computers.
+- **UDP (User Datagram Protocol)** – a connectionless protocol for data transfer. Since a session is not created before the data transfer, there is no guarantee of data delivery.
+- **FTP (File Transfer Protocol)** – used for file transfers from one host to another.
+- **Telnet (Telecommunications Network)** – used to connect and issue commands on a remote computer.
+- **DNS (Domain Name System)** – used for host names to the IP address resolution.
+- **HTTP (Hypertext Transfer Protocol)** – used to transfer files (text, graphic images, sound, video, and other multimedia files) on the World Wide Web.
+ 
+
+The following table shows which protocols reside on which layer of the TCP/IP model:
+
+![](https://drive.google.com/uc?export=view&id=1z31cue-fpfYsYpj21z9k6DGMgQqhTgD-)
+
 ---
 
 ## TCP explained
+
+One of the main protocols in the TCP/IP suite is Transmission Control Protocol (TCP). TCP provides reliable and ordered delivery of data between applications running on hosts on a TCP/IP network. Because of its reliable nature, TCP is used by applications that require high reliability, such as FTP, SSH, SMTP, HTTP, etc.
+
+TCP is connection-oriented, which means that, before data is sent, a connection between two hosts must be established. The process used to establish a TCP connection is known as the three-way handshake. After the connection has been established, the data transfer phase begins. After the data is transmitted, the connection is terminated.
+ 
+One other notable characteristic of TCP is its reliable delivery. TCP uses sequence numbers to identify the order of the bytes sent from each computer so that the data can be reconstructed in order. If any data is lost during the transmission, the sender can retransmit the data.
+
+Because of all of its characteristics, TCP is considered to be complicated and costly in terms of network usage. The TCP header is up to 24 bytes long and consists of the following fields:
+
+![](https://drive.google.com/uc?export=view&id=1025iGeqEy7y24QXK-xctQTgvkdyTABLf)
+
+- **source port** – the port number of the application on the host sending the data.
+- **destination port** – the port number of the application on the host receiving the data.
+- **sequence number** – used to identify each byte of data.
+- **acknowledgment number** – the next sequence number that the receiver is expecting.
+- **header length** – the size of the TCP header.
+- **reserved** – always set to 0.
+- **flags** – used to set up and terminate a session.
+- **window** – the window size the sender is willing to accept.
+- **checksum** – used for error-checking of the header and data.
+- **urgent** – indicates the offset from the current sequence number, where the segment of non-urgent data begins.
+- **options** – various TCP options, such as Maximum Segment Size (MSS) or Window Scaling.
+ 
+
+> **NOTE**
+TCP is a Transport layer protocol (Layer 4 of the OSI model).
 
 ---
 
 ## UDP explained
 
+One other important protocol in the TCP/IP site is **User Datagram Protocol (UDP)**. This protocol is basically a scaled-down version of TCP. Just like TCP, this protocol provides delivery of data between applications running on hosts on a TCP/IP network, but, unlike TCP, it does not sequence the data and does not care about the order in which the segments arrive at the destination. Because of this it is considered to be an unreliable protocol. UDP is also considered to be a connectionless protocol, since no virtual circuit is established between two endpoints before the data transfer takes place.
+
+Because it does not provide many features that TCP does, UDP uses much less network resources than TCP. UDP is commonly used with two types of applications:
+
+- **applications that are tolerant of the lost data** – VoIP (Voice over IP) uses UDP because if a voice packet is lost, by the time the packet would be retransmitted, too much delay would have occurred, and the voice would be unintelligible.
+- **applications that have some application mechanism to recover lost data** – Network File System (NFS) performs recovery with application layer code, so UDP is used as a transport-layer protocol.
+
+The UDP header is 8 bytes long and consists of the following fields:
+
+![](https://drive.google.com/uc?export=view&id=1roxRO0IoatPn-k8cPCY9e37lRUIAgzq-)
+
+Here is a description of each field:
+
+- **source port** – the port number of the application on the host sending the data.
+- **destination port** – the port number of the application on the host receiving the data.
+- **length** – the length of the UDP header and data.
+- **checksum** – checksum of both the UDP header and UDP data fields.
+
+> **NOTE**
+UDP is a Transport layer protocol (Layer 4 of the OSI model).
+
 ---
 
 ## Ports explained
+
+A **port** is a 16-bit number used to identify specific applications and services. TCP and UDP specify the source and destination port numbers in their packet headers and that information, along with the source and destination IP addresses and the transport protocol (TCP or UDP), enables applications running on hosts on a TCP/IP network to communicate.
+
+Applications that provide a service (such as FTP and HTTP servers) open a port on the local computer and listen for connection requests. A client can request the service by pointing the request to the application’s IP address and port. A client can use any locally unused port number for communication. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1ZTTpe4N5Fek8vouszHCeb_r8zcF64h1Q)
+
+In the picture above you can see that a host with an IP address of 192.168.0.50 wants to communicate with the FTP server. Because FTP servers use, by default, the well-known port 21, the host generates the request and sends it to the FTP server’s IP address and port. The host use the locally unused port of 1200 for communication. The FTP server receives the request, generates the response,and sends it to the host’s IP address and port.
+
+Port numbers are from 0 to 65535. The first 1024 ports are reserved for use by certain privileged services:
+
+![](https://drive.google.com/uc?export=view&id=1FJkiBr_AymDyVrWLarKz3TsF68f1uysA)
+
+> **NOTE**
+The combination of an IP address and a port number is called a socket. In our example the socket would be 192.168.0.50:1200.
 
 ---
 
 ## ARP (Address Resolution Protocol) explained
 
+**ARP (Address Resolution Protocol)** is a network protocol used to find out the hardware (MAC) address of a device from an IP address. It is used when a device wants to communicate with some other device on a local network (for example on an Ethernet network that requires physical addresses to be known before sending packets). The sending device uses ARP to translate IP addresses to MAC addresses. The device sends an ARP request message containing the IP address of the receiving device. All devices on a local network segment see the message, but only the device that has that IP address responds with the ARP reply message containing its MAC address. The sending device now has enough information to send the packet to the receiving device.
+
+ARP request packets are sent to the broadcast addresses (FF:FF:FF:FF:FF:FF for the Ethernet broadcasts and 255.255.255.255 for the IP broadcast).
+
+Here is the explanation otf the ARP process:
+
+![](https://drive.google.com/uc?export=view&id=1y1gaMhjDuwIrf5VFTOys8y4Ch9LhabpK)
+
+Let’s say that Host A wants to communicate with host B. Host A knows the IP address of host B, but it doesn’t know the host B’s MAC address. In order to find out the MAC address of host B, host A sends an ARP request, listing the host B’s IP address as the destination IP address and the MAC address of FF:FF:FF:FF:FF:FF (Ethernet broadcast). Switch will forward the frame out all interfaces (except the incoming interface). Each device on the segment will receive the packet, but because the destination IP address is host B’s IP address, only host B will reply with the ARP reply packet, listing its MAC address. Host A now has enough information to send the traffic to host B.
+
+All operating systems maintain ARP caches that are checked before sending an ARP request message. Each time a host needs to send a packet to another host on the LAN, it first checks its ARP cache for the correct IP address and matching MAC address. The addresses will stay in the cache for a couple of minutes. You can display ARP entries in Windows by using the arp -a command:
+
+![](https://drive.google.com/uc?export=view&id=15Lei8opDKPvhMRWRYlHBsZ3reOzKgwlA)
+
 ---
 
 ## DHCP & DNS
+
+### DHCP (Dynamic Host Configuration Protocol)
+
+DHCP is a network protocol that is used to assign various network parameters to a device. This greatly simplifies administration of a network, since there is no need to assign static network parameters for each device.
+
+DHCP is a client-server protocol. A client is a device that is configured to use DHCP to request network parameters from a DHCP server. DHCP server maintains a pool of available IP addresses and assignes one of them to the host. A DHCP server can also provide some other parameters, such as:
+
+- subnet mask
+- default gateway
+- domain name
+- DNS server
+ 
+Cisco routers can be configured as both DHCP client and DHCP server.
+
+### DHCP process explained:
+
+DHCP client goes through the four step process:
+
+![](https://drive.google.com/uc?export=view&id=1qNOXn00EgB-WuaRUXo62PyZj67VeXF87)
+
+1: A DHCP client sends a broadcast packet **(DHCP Discover)** to discover DHCP servers on the LAN segment.
+
+2: The DHCP servers receive the DHCP Discover packet and respond with **DHCP Offer** packets, offering IP addressing information.
+
+3: If the client receives the DHCP Offer packets from multiple DHCP servers, the first DHCP Offer packet is accepted. The client responds by broadcasting a **DHCP Request** packet, requesting the network parameters from the server that responded first.
+
+4: The DHCP server approves the lease with a **DHCP Acknowledgement** packet. The packet includes the lease duration and other configuration information.
+
+> **NOTE**
+DHCP uses a well-known UDP port number 67 for the DHCP server, and the UDP port number 68 for the client.
+
+### DNS (Domain Name System)
+DNS is a network protocol used to translate hostnames into IP addresses. DNS is not required to establish a network connection, but it is much more user friendly for human users than the numeric addressing scheme. Consider this example – you can access the Google homepage by typing **216.58.207.206**, but it’s much easier just to type **www.google.com**!
+
+To use DNS, you must have a DNS server configured to handle the resolution process. A DNS server has a special-purpose application installed. The application maintains a table of dynamic or static hostname-to-IP address mappings. When a user request some network resource using a hostname, (e.g. by typing **www.google.com** in a browser), a DNS request is sent to the DNS server asking for the IP address of the hostname. The DNS server then replies with the IP address. The user’s browser can now use that IP address to access www.google.com.
+
+The figure below explains the concept:
+
+![](https://drive.google.com/uc?export=view&id=1NEmyfGnP8oM1zaaVqygkxpuHXqoWoM-v)
+
+Suppose that the DNS Client wants to communicate with the server named **Server1**. Since the DNS Client doesn’t know the IP address of Server1, it sends a DNS Request to the **NS Server**, asking for Server1’s IP address. The DNS Server replies with the IP address of Server1 (DNS Reply).
+
+The picture below shows a sample DNS record, taken from a DNS server:
+
+![](https://drive.google.com/uc?export=view&id=16GhBOfTp_HsPlSlvnksu9xKtV77E5oWN)
+
+Here you can see that the host with the hostname **APP1** is using the IP address of **10.0.0.3**.
+
+> **NOTE**
+DNS uses a well-known UDP port 53.
 
 ---
 
 ## Telnet & SSH
 
+### Telnet
+
+Telnet is a network protocol that allows a user to communicate with a remote device. It is a virtual terminal protocol used mostly by network administrators to remotely access and manage devices. Administrator can access the device by _telnetting_ to the IP address or hostname of a remote device.
+
+To use telnet, you must have a software (Telnet client) installed. On a remote device, a Telnet server must be installed and running. Telnet uses the TCP port 23 by default.
+ 
+One of the greatest disadvantages of this protocol is that all data, including usernames and passwords, is sent in clear text, which is a potential security risk. This is the main reason why Telnet is rarely used today and is being replaced by a much secure protocol called SSH. Here you can find information about setting up Telnet access on your Cisco device.
+
+> **NOTE**
+The word **telnet** can also refer to the software that implements the telnet protocol.
+ 
+On Windows, you can start a Telnet session by typing the telnet *IP_ADDRESS* or _HOSTNAME_ command:
+
+![](https://drive.google.com/uc?export=view&id=1V1ZxBB9BrmNZNk6qqo4aObNJyWrGheq2)
+
+### SSH (Secure Shell)
+
+SSH is a network protocol used to remotely access and manage a device. The key difference between Telnet and SSH is that SSH uses encryption, which means that all data transmitted over a network is secure from eavesdropping. SSH uses the **public key encryption** for such purposes.
+
+Like Telnet, a user accessing a remote device must have an SSH client installed. On a remote device, an SSH server must be installed and running. SSH uses the TCP port 22 by default.
+
+Here is an example of creating an SSH session using Putty, a free SSH client:
+
+![](https://drive.google.com/uc?export=view&id=1Ti_Ammn-SVHbrrww5AHlWsp9C1_CPg0l)
+
+> **NOTE**
+SSH is the most common way to remotely access and manage a Cisco device. Here you can find information about setting up SSH access on your Cisco device.
+
 ---
 
 ## FTP & TFTP
+
+### FTP (File Transfer Protocol)
+
+FTP is a network protocol used to transfer files from one computer to another over a TCP network. Like Telnet, it uses a client-network arhitecture, which means that a user has to have an FTP client installed to access the FTP server running on a remote machine. After establishing the FTP connection, the user can download or upload files to and from the FTP server.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1j9OuyD59gYpGzLZ1BmpdUxNF0LpfKRJr)
+
+A user wants to transfer files from Host A to the FTP server. The user will start an FTP client program (in this example, **Filezilla**), and initiate the connection:
+
+![](https://drive.google.com/uc?export=view&id=1ir3C0Uw4hKxfUv3fb5WBrw8sSOu9qy1z)
+
+In the example above, the anonymous authentication was used, so the user was not asked to provide the password. The client can now transfer files from and to the FTP server using the graphical interface.
+
+> **NOTE**
+FTP uses two TCP ports: port 20 for sending data and port 21 for sending control commands. The protocol supports the use of authentication, but like Telnet, all data is sent in clear text, including usernames and passwords.
+
+### TFTP (Trivial File Protocol)
+
+TFTP is a network protocol used to transfer files between remote machines. It is a simple version of FTP, lacking some of the more advanced features FTP offers, but requiring less resources than FTP.
+
+Because of it’s simplicity TFTP can be used only to send and receive files. This protocol is not widely used today, but it still can be used to save and restore a router configuration or to backup an IOS image.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1eaTFV_Ra4ufyY5h6X8561fI5O3cRd0uc)
+
+A user wants to transfer files from Host A to the router R1. R1 is a Cisco device and it has a TFTP server installed. The user will start an TFTP client program and initiate the data transfer.
+
+> **NOTE**
+TFTP doesn’t support user authentication and sends all data in clear text. It uses UDP port 69 for communication.
 
 ---
 
 ## SNMP (Simple Network Management Protocol)
 
+**Simple Network Management Protocol (SNMP)** is an application layer protocol that is used for network device management. This protocol can collects and manipulate valuable network information from switches, routers, servers, printers, and other network-attached devices.
+
+An SNMP-managed network consists of two components:
+
+- **Network management station (NMS)** – the software which runs on the administrative computer. This software gathers SNMP data by requiring the devices on the network to disclose certain information. Devices can also inform the NMS about problems they are experiencing by sending an SNMP alert (called a trap).
+- **Agent** – the software which runs on managed devices and reports information via SNMP to the NMS.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1o6nkEcS5F2VrL__b-pX7gnULTjDmDSqa)
+
+The router R1 is configured to send SNMP traps to the NMS Station. If a problem occurs, the router will send an SNMP trap to Host A. For example, if there is a port security violation on R1, the router will send the SNMP trap, notifying that there has been a potential security breach on the network.
+
+> **NOTE**
+SNMP agents use a UDP port 161, while the manager uses a UDP port 162. The current SNMP version is SNMPv3. The prior versions, SNMPv1 and SNMPv2 are considered obsolete and should not be used.
+
 ---
 
 ## HTTP and HTTPS explained
+
+### HTTP (Hypertext Transfer Protocol)
+
+HTTP is an client-server protocol that allows clients to request web pages from web servers. It is an application level protocol widely used on the Internet. Clients are usually web browsers. When a user wants to access a web page, a browser sends an HTTP Request message to the web server. The server responds with the requested web page. By default, web servers use the TCP port 80.
+
+Clients and web servers use request-response method to communicate with each other, with clients sending the HTTP Requests and servers responding with the HTTP Responses. Clients usually send their requests using GET or POST methods, for example **GET /homepage.html**. Web servers responds with a status message (200 if the request was successful) and sends the requested resource.
+
+An example will clarify this process:
+
+![](https://drive.google.com/uc?export=view&id=1aEyf_4ZSgr4HC3chOyt5lpNOjL4Zl5z1)
+
+The client wants to access **http://google.com** and points his browser to the URL **http://google.com** (this is an example of an HTTP Request message). The web server hosting **http://google.com** receives the request and responds with the content of the web page (the HTTP response message).
+
+Web servers usually use a well-known TCP port 80. If the port is not specified in a URL, browsers will use this port when sending HTTP request. For example, you will get the same result when requesting http://google.com and http://google.com:80.
+
+> **NOTE**
+The version of HTTP most commonly used today is **HTTP/1.1**. A newer version, HTTP/2, is available and supported by most browser.
+
+### HTTPS (Hypertext Transfer Protocol Secure)
+
+Hypertext Transfer Protocol Secure is a secure version of HTTP. This protocol enables secure communication between a client (e.g. web browser) and a server (e.g. web server) by using encryption. HTTPS uses **Transport Layer Security (TLS)** protocol or its predecessor **Secure Sockets Layer (SSL)** for encryption.
+
+HTTPS is commonly used to create a secure channel over some insecure network, e.g. Internet. A lot of traffic on the Internet is unencryped and susceptible to sniffing attacks. HTTPS encrypts sensitive information, which makes a connection secure.
+
+HTTPS URLs begin with **https** instead of **http**. In Internet Explorer, you can immediately recognize that a web site is using HTTPS because a lock appears to the right of the address bar:
+
+![](https://drive.google.com/uc?export=view&id=1KGankqTgJqWwoI-iHM2UgSEmWP6cHh-p)
+
+> **NOTE**
+HTTPS uses a well-known TCP port 443. If the port is not specified in a URL, browsers will use this port when sending HTTPS request. For example, you will get the same result when requesting **https://gmail.com** and **https://gmail.com:443**.
 
 ---
 
 ## NTP (Network Time Protocol)
 
+**Network Time Protocol (NTP)** is an application layer protocol used for clock synchronization between hosts on a TCP/IP network. The goal of NTP is to ensure that all computers on a network agree on the time, since even a small difference can create problems. For example, if there is more than 5 minutes difference on your host and the Active Directory domain controller, you will not be able to login into your AD domain.
+
+NTP uses a hierarchical system of time sources. At the top of the structure are highly accurate time sources – typically atomic or GPS clocks. These clocks are known as stratum 0 servers. Stratum 1 servers are directly linked to stratum 0 servers and computers run NTP servers that deliver the time to stratum 2 servers, and so on (image source: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=10RlcVq2Z8rxd_xfFfcrZiiRx5dNIr34p)
+
+NTP uses a client-server architecture; one host is configured as the NTP server and all other hosts on the network are configured as NTP clients. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1W9rsFKElYawG8GPLA7g5mPyblcs4INK-)
+
+Host A is configured to use a public NTP server **uk.pool.ntp.org**. Host A will periodically send an NTP request to the NTP server. The NTP server will provide the accurate data and time, so Host A can synchronize its clock.
+
+> **NOTE**
+NTP uses a well-known UDP port 123. The current version is NTPv4, and it is backward compatible with NTPv3.
+
 ---
 
 ## APIPA (Automatic Private IP Addressing)
+
+**Automatic Private IP Addressing (APIPA)** is a feature in operating systems (such as Windows) that enables computers to automatically self-configure an IP address and subnet mask when their DHCP server isn’t reachable. The IP address range for APIPA is **169.254.0.1-169.254.255.254**, with the subnet mask of **255.255.0.0**.
+
+When a DHCP client boots up, it looks for a DHCP server in order to obtain network parameters. If the client can’t communicate with the DHCP server, it uses APIPA to configure itself with an IP address from the APIPA range. This way, the host will still be able to communicate with other hosts on the local network segment that are also configured for APIPA.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1Wo2w9Jmqof9FkHP5FiwY7u1hfUeVXTlg)
+
+The host on the left is configured as DHCP client. The host boots up and looks for DHCP servers on the network. However, the DHCP server is down and can’t respond to the host. After some time (from a couple of seconds to a couple of minutes, depending on the operating system) the client auto-configures itself with an address from the APIPA range (e.g. **169.254.154.22**).
+
+> **NOTE**
+If your host is using an IP address from the APIPA range, there is usually a problem on the network. Check the network connectivity of your host and the status of the DHCP server.
+
+The APIPA service also checks regularly for the presence of a DHCP server (every three minutes). If it detects a DHCP server on the network, the DHCP server replaces the APIPA networking addresses with dynamically assigned addresses.
 
 ---
 
 ## ICMP (Internet Control Message Protocol)
 
+### ICMP (Internet Control Message Protocol)
+
+**ICMP (Internet Control Message Protocol)** is a network layer protocol that reports errors and provides information related to IP packet processing. ICMP is used by network devices to send error messages indicating, for example, that a requested service is not available or that a host isn’t reachable.
+
+ICMP is commonly used by network tools such as **ping** or **traceroute**. Consider the following example that illustrates how ping can be used to test the reachability of a host:
+
+![](https://drive.google.com/uc?export=view&id=1OtdNMg9u3vIhS-jY4C3rqryjqhaHpu1a)
+
+**Host A** wants to test whether it can reach **Server** over the network. Host A will start the ping utility that will send **ICMP Echo Request** packets to Server. If Server is reachable, it will respond with **ICMP Echo Reply** packets. If Host A receives no response from Server, there might be a problem on the network.
+
+> **NOTE**
+ICMP messages are encapsulated in IP datagrams, which means that they don’t use higher level protocols (such as TCP or UDP) for transmission.
+
+One other common ICMP message is the **Destination unreachable** message. Here is an example:
+
+![](https://drive.google.com/uc?export=view&id=1iV86HXUOza4bBT_P3CTz7VoWK1xwGApH)
+
+Host A sends a packet to Host B. Because the Host B is down, the router will send an **ICMP Destination host unreachable** message to Host A, informing it that the destination host is unreachable, e.g.:
+
+![](https://drive.google.com/uc?export=view&id=14LGrIEcvVU8xdpBUSxfTVWLt9RpY7b57)
+
 ---
 
 ## IP header
 
----
+An **IP header** is a prefix to an IP packet that contains information about the IP version, length of the packet, source and destination IP addresses, etc. It consists of the following fields:
+
+![](https://drive.google.com/uc?export=view&id=1Wrf-G5wU8wSjMaIlgNV7kc_fcEIB5o9L)
+
+Here is a description of each field:
+
+- **Version** – the version of the IP protocol. For IPv4, this field has a value of 4.
+- **Header length** – the length of the header in 32-bit words. The minumum value is 20 bytes, and the maximum value is 60 bytes.
+- **Priority and Type of Service** – specifies how the datagram should be handled. The first 3 bits are the priority bits.
+- **Total length** – the length of the entire packet (header + data). The minimum length is 20 bytes, and the maximum is 65,535 bytes.
+- **Identification** – used to differentiate fragmented packets from different datagrams.
+- **Flags** – used to control or identify fragments.
+- **Fragmented offset** – used for fragmentation and reassembly if the packet is too large to put in a frame.
+- **Time to live** – limits a datagram’s lifetime. If the packet doesn’t get to its destination before the TTL expires, it is discarded.
+- **Protocol** – defines the protocol used in the data portion of the IP datagram. For example, TCP is represented by the number 6 and UDP by 17.
+- **Header checksum** – used for error-checking of the header. If a packet arrives at a router and the router calculates a different checksum than the one specified in this field, the packet will be discarded.
+- **Source IP address** – the IP address of the host that sent the packet.
+- **Destination IP address** – the IP address of the host that should receive the packet.
+- **Options** – used for network testing, debugging, security, and more. This field is usually empty.
+
+Consider the following IP header, captured with **Wireshark**:
+
+![](https://drive.google.com/uc?export=view&id=1gKTY9cPn6PR-hDQ-dHtrqYHJrmPXLbHd)
+
+Notice the fields in the header: the IP version is IPv4, the header length is 20 bytes, the upper-level protocol used is TCP, the TTL value is set tu 128, source and destination IP addresses are listed, etc.

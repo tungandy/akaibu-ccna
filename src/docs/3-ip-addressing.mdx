@@ -4,28 +4,186 @@ title: 'IP Addressing'
 
 ## Types of IP addresses
 
+The IP addresses are divided into three different types, based on their operational characteristics:
+
+**Unicast IP addresses** – an address of a single interface. The IP addresses of this type are used for one-to-one communication. Unicast IP addresses are used to direct packets to a specific host. Here is an example:
+
+![](https://drive.google.com/uc?export=view&id=1GTBWzl53cDmvbh-fLl8jP_Myd6lqQwRF)
+
+In the picture above you can see that the host wants to communicate with the server. It uses the (unicast) IP address of the server (**192.168.0.150**) to do so.
+
+**Multicast IP addresses** – used for one-to-many communication. Multicast messages are sent to IP multicast group addresses. Routers forward copies of the packet out to every interface that has hosts subscribed to that group address. Only the hosts that need to receive the message will process the packets. All other hosts on the LAN will discard them. Here is an example:
+
+![](https://drive.google.com/uc?export=view&id=1KrqCT4XuIoEYny7qixv-XVFE0HTBY3ip)
+
+R1 has sent a multicast packet destined for **224.0.0.9**. This is an RIPv2 packet, and only routers on the network should read it. R2 will receive the packet and read it. All other hosts on the LAN will discard the packet.
+
+**Broadcast IP addresses** – used to send data to all possible destinations in the broadcast domain (the one-to-everybody communication). The broadcast address for a network has all host bits on. For example, for the network **192.168.30.0 255.255.255.0** the broadcast address would be **192.168.30.255(*)**. Also, the IP address of all 1’s (**255.255.255.255**) can be used for local broadcast. Here’s an example:
+
+![](https://drive.google.com/uc?export=view&id=1SqYI_liBU0N6tfoPu8nG0hSRfHurx9es)
+
+R1 wants to communicate with all hosts on the network and has sent a broadcast packet to the broadcast IP address of 192.168.30.255. All hosts in the same broadcast domain will receive and process the packet.
+
+**(*)**_This is because the subnet mask of 255.255.255.0 means that the last octet in the IP address represents the host bits. And 8 one’s written in decimal is 255._
+
 ---
 
 ## Classes of IP addresses
+
+TCP/IP defines five classes of IP addresses: class A, B, C, D, and E. Each class has a range of valid IP addresses. The value of the first octet determines the class. IP addresses from the first three classes (A, B and C) can be used for host addresses. The other two classes are used for other purposes – class D for multicast and class E for experimental purposes.
+
+The system of IP address classes was developed for the purpose of Internet IP addresses assignment. The classes created were based on the network size. For example, for the small number of networks with a very large number of hosts, the Class A was created. The Class C was created for numerous networks with small number of hosts.
+
+Classes of IP addresses are:
+
+![](https://drive.google.com/uc?export=view&id=1wckk-0sDUbRZm-hU-h0XmZruUi51dHIi)
+
+For the IP addresses from Class A, the first 8 bits (the first decimal number) represent the network part, while the remaining 24 bits represent the host part. For Class B, the first 16 bits (the first two numbers) represent the network part, while the remaining 16 bits represent the host part. For Class C, the first 24 bits represent the network part, while the remaining 8 bits represent the host part.
+
+Consider the following IP addresses:
+
+- **10.50.120.7** – because this is a Class A address, the first number (10) represents the network part, while the remainder of the address represents the host part (50.120.7). This means that, in order for devices to be on the same network, the first number of their IP addresses has to be the same for both devices. In this case, a device with the IP address of 10.47.8.4 is on the same network as the device with the IP address listed above. The device with the IP address 11.5.4.3 is not on the same network, because the first number of its IP address is different.
+- **172.16.55.13** – because this is a Class B address, the first two numbers (172.16) represent the network part, while the remainder of the address represents the host part (55.13). A device with the IP address of 172.16.254.3 is on the same network, while a device with the IP address of 172.55.54.74 isn’t.
+ 
+
+> **NOTE**
+The system of network address ranges described here is generally bypassed today by use of the Classless Inter-Domain Routing (CIDR) addressing.
+ 
+
+Special IP address ranges that are used for special purposes are:
+
+- **0.0.0.0/8** – addresses used to communicate with the local network
+- **127.0.0.0/8** – loopback addresses
+- **169.254.0.0/16** – link-local addresses (APIPA)
 
 ---
 
 ## Private IP addresses explained
 
+The original design of the Internet intended that each host on every network should have a real, routable IP address. An organization that would like to access the Internet would complete some paperwork to describe its internal network and the number of hosts on it. The organization would then receive a number of IP addresses, according to its needs. But there was one huge problem with this concept – if each host on each network in the world was provided with an unique IP address, we would have run out of IP addresses a long time ago!
+
+Therefore, the concept of private IP addressing was developed to address the IP address exhaustion problem. The private IP addresses can be used on the private network of any organization in the world and are not globally unique.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1iBUYZ4a1Y9vDP8h2MtPygiIE2e-fGZ6D)
+
+In the example above you can see that two unrelated organizations use the same private IP network (10.0.0.0/24) inside their respective internal networks. Because private IP addresses are not globally unique, both organizations can use private IP addresses from the same range. To access the Internet, the organizations can use a technology called Network Address Translation (NAT), which we will describe in the later lessons.
+
+There are three ranges of addresses that can be used in a private network (e.g. your home LAN or office)
+
+10.0.0.0 – 10.255.255.255
+172.16.0.0 – 172.31.255.255
+192.168.0.0 – 192.168.255.255
+Internet routers are configured to discard any packets coming from the private IP address ranges, so these addresses are not routable on the Internet.
+
 ---
 
 ## Subnetting explained
+
+**Subnetting** is the practice of dividing a network into two or more smaller networks. It increases routing efficiency, enhances the security of the network and reduces the size of the broadcast domain.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1ZDCmRouGzDcGRazhAuDKvpPbF-zTjkyv)
+
+In the picture above we have one huge network: **10.0.0.0/24**. All hosts on the network are in the same subnet, which has the following disadvantages:
+
+- **a single broadcast domain** – all hosts are in the same broadcast domain. A broadcast sent by any device on the network will be processed by all hosts, creating lots of unnecessary traffic.
+- **network security** – each device can reach any other device on the network, which can present security problems. For example, a server containing sensitive information shouldn’t be in the same network as user’s workstations.
+- **organizational problems** – in a large networks, different departments are usually grouped into different subnets. For example, you can group all devices from the **Accounting** department in the same subnet and then give access to sensitive financial data only to hosts from that subnet.
+The network above could be subnetted like this:
+
+![](https://drive.google.com/uc?export=view&id=1VrRg6-1ZpDjuuBlg7H6UEZKcPotSvh-Y)
+
+Now, two subnets were created for different departments: **10.0.0.0/24** for Accounting and **10.1.0.0/24** for Marketing. Devices in each subnet are now in a different broadcast domain. This will reduce the amount of traffic flowing on the network and allow us to implement packet filtering on the router.
 
 ---
 
 ## Subnet mask
 
+An IP address is divided into two parts: network and host parts. For example, an IP class A address consists of 8 bits identifying the network and 24 bits identifying the host. This is because the default subnet mask for a class A IP address is 8 bits long. (or, written in dotted decimal notation, 255.0.0.0). What does it mean? Well, like an IP address, a subnet mask also consists of 32 bits. Computers use it to determine the network part and the host part of an address. The 1s in the subnet mask represent a network part, the 0s a host part.
+
+Computers works only with bits. The math used to determine a network range is binary AND.
+
+![](https://drive.google.com/uc?export=view&id=1BtU89aMzqHEvEFP58A_8YK82KU9SbK-v)
+
+Let’s say that we have the IP address of 10.0.0.1 with the default subnet mask of 8 bits (255.0.0.0).
+First, we need to convert the IP address to binary:
+
+IP address: 10.0.0.1 = 00001010.00000000.00000000.00000001
+Subnet mask 255.0.0.0 = 11111111.00000000.00000000.0000000
+
+Computers then use the AND operation to determine the network number:
+
+![](https://drive.google.com/uc?export=view&id=1YS1nRvPtQz4Ct5tDH6OnsMCgCQxV0OGd)
+
+The computer can then determine the size of the network. Only IP addresses that begins with 10 will be in the same network. So, in this case, the range of addresses in this network is 10.0.0.0 – 10.255.255.255.
+
+> **NOTE**
+A subnet mask must always be a series of 1s followed by a series of 0s.
+
 ---
 
 ## Create subnets
+
+There are a couple of ways to create subnets. In this article we will subnet a class C address **192.168.0.0** that, by default, has **24** subnet bits and **8** host bits.
+
+Before we start subnetting, we have to ask ourselves these two questions:
+
+**1. How many subnets do we need?**
+
+2x = number of subnets. **x** is the number of 1s in the subnet mask. With 1 subnet bit, we can have 21 or 2 subnets. With 2 bits, 22 or 4 subnets, with 3 bits, 23 or 8 subnets, etc.
+
+**2. How many hosts per subnet do we need?**
+
+2y – 2 = number of hosts per subnet. **y** is the number of 0s in the subnet mask.
+
+**Subnetting example**
+
+An example will help you understand the subnetting concept. Let’s say that we need to subnet a class C address **192.168.0.0/24**. We need two subnets with **50** hosts per subnet. Here is our calculation:
+
+1. Since we need only two subnets, we need 21 subnet bits. In our case, this means that we will take one bit from the host part. Here is the calculation:
+ 
+First, we have a class C address 192.168.0.0 with the subnet mask of 24. Let’s convert them to binary:
+
+**192.168.0.0 = 11000000.10101000.00000000.00000000**
+**255.255.255.0 = 11111111.11111111.11111111.00000000**
+
+We need to take a single zero from the host part of the subnet mask. Here is our new subnet mask:
+
+**255.255.255.128 = 11111111.11111111.11111111.10000000**
+
+Remember, the ones in the subnet mask represent the network.
+
+2. We need 50 hosts per subnet. Since we took one bit from the host part, we are left with seven bits for the hosts. Is it enough for 50 hosts? The formula to calculate the number of hosts is 2^y – 2, with **y** representing the number of host bits. Since 27 – 2 is 126, we have more than enough bits for our hosts.
+
+3. Our network will look like this:
+
+**192.168.0.0/25** – the first subnet has the subnet number of **192.168.0.0**. The range of IP addresses in this subnet is **192.168.0.0 – 192.168.0.127**.
+
+**192.168.0.128/25** – the second subnet has the subnet number of **192.168.0.128**. The range of IP addresses in this subnet is **192.168.0.128 – 192.168.0.255**.
 
 ---
 
 ## CIDR (Classless inter-domain routing)
 
----
+**CIDR (Classless inter-domain routing)** is a method of public IP address assignment. It was introduced in 1993 by Internet Engineering Task Force with the following goals:
+
+to deal with the IPv4 address exhaustion problem
+to slow down the growth of routing tables on Internet routers
+Before CIDR, public IP addresses were assigned based on the class boundaries:
+
+- **Class A** – the classful subnet mask is /8. The number of possible IP addresses is 16,777,216 (2 to the power of 24).
+- **Class B** – the classful subnet mask is /16. The number of addresses is 65,536
+- **Class C** – the classful subnet mask is /24. Only 256 addresses available.
+
+Some organizations were known to have gotten an entire - Class A public IP address (for example, IBM got all the addresses in the 9.0.0.0/8 range). Since these addresses can’t be assigned to other companies, there was a shortage of available IPv4 addresses. Also, since IBM probably didn’t need more than 16 million IP addresses, a lot of addresses were unused.
+
+To combat this, the classful network scheme of allocating the IP address was abandoned. The new system was classsless – a classful network was split into multiple smaller networks. For example, if a company needs 12 public IP addresses, it would get something like this: **190.5.4.16/28**.
+
+The number of usable IP addresses can be calculated with the following formula:
+
+**2 to the power of host bits – 2**
+
+In the example above, the company got 14 usable IP addresses from the 190.5.4.16 – 190.5.4.32 range because there are 4 host bits and 2 to the power of 4 minus 2 is 14 The first and the last address are the network address and the broadcast address,,respectively. All other addresses inside the range could be assigned to Internet hosts.

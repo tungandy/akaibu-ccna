@@ -4,8 +4,75 @@ title: 'Cabling'
 
 ## Types of Ethernet cabling
 
+There are three cable types commonly used for Ethernet cabling: coaxial, twisted pair, and fiber-optic cabling. In today’s LANs, the twisted pair cabling is the most popular type of cabling, but the fiber-optic cabling usage is increasing, especially in high performance networks. Coaxial cabling is generally used for cable Internet access. Let’s expain all three cable types in more detail.
+
+### Coaxial cabling
+
+A coaxial cable has an inner conductor that runs down the middle of the cable. The conductor is surrounded by a layer of insulation which is then surrounded by another conducting shield, which makes this type of cabling resistant to outside interference. This type of cabling comes in two types – thinnet and thicknet. Both types have maximum transmission speed of 10 Mbps. Coaxial cabling was previously used in computer networks, but today are largely replaced by twisted-pair cabling (Photo credit: Wikipedia)
+
+![](https://drive.google.com/uc?export=view&id=10hOlSqL0spa3E-Bg8gKzp6dP5RcAuod3)
+
+### Twisted-pair cabling
+
+A twisted-pair cable has four pair of wires. These wires are twisted around each other to reduce crosstalk and outside interference. This type of cabling is common in current LANs.
+
+Twisted-pair cabling can be used for telephone and network cabling. It comes in two versions, UTP (Unshielded Twisted-Pair) and STP (Shielded Twisted-Pair). The difference between these two is that an STP cable has an additional layer of insulation that protects data from outside interferences.
+
+Here you can see how a twisted pair cable looks like (Photo credit: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=1PBdI8XrF5514hYSO6Iky3fVYR9GH1e3D)
+
+A twisted-pair cable uses 8P8C connector, sometimes wrongly referred to as RJ45 connector (Photo credit: Wikipedia).
+
+![](https://drive.google.com/uc?export=view&id=1mgiFB_xalTuXfFwXHo5Adt9d0pvSjzlE)
+
+### Fiber-optic cabling
+
+This type of cabling uses optical fibers to transmit data in the form of light signals. The cables have strands of glass surrounded by a cladding material (Photo credit: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=16GC2hqayTHrfzn5FruEUKQOEEqF5TFKN)
+
+This type of cabling can support greater cable lengths than any other cabling type (up to a couple of miles). The cables are also immune to electromagnetic interference. As you can see, this cabling method has many advantages over other methods but its main drawback is that it is more expensive.
+
+There are two types of fiber-optic cables:
+
+- **Single-mode fiber (SMF)** – uses only a single ray of light to carry data. Used for larger distances.
+- **Multi-mode fiber (MMF)** – uses multiple rays of light to carry data. Less expensive than SMF.
+Four types of connectors are commonly used:
+
+- ST (Straight-tip connector)
+- SC (Subscriber connector)
+- FC (Fiber Channel)
+- LC (Lucent Connector)
+
 ---
 
 ## Types of Ethernet cables – straight-through and crossover
 
----
+Ethernet cables can come in two forms when it comes to wiring:
+
+### Straight-through cable
+
+This cable type has identical wiring on both ends (pin 1 on one end of the cable is connected to pin 1 at the other end of the cable, pin 2 is connected to pin 2 etc.):
+
+![](https://drive.google.com/uc?export=view&id=1KXHbppT8e-8w_TYFTJ-gAV0e_ZTX4FAN)
+
+This type of cable is used to connect the following devices:
+
+- computer to hub
+- computer to switch
+- router to hub
+- router to switch
+
+Computers and routers use wires 1 and 2 to transmit data and wires 3 and 6 to receive data. Hubs and switches use wires 1 and 2 to receive data and wires 3 and 6 to send data. That is why, if you want to connect two computers together, you will need a crossover cable.
+
+### Crossover cable
+
+With the crossover cable, the wire pairs are swapped, which means that different pins are connected together – pin 1 on one end of the cable is connected to pin 3 on the other end, pin 2 on one end is connected to pin 6 on the other end (Photo credit: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=1gaeL3jClnWJAI1Ww_hO584bQML8ZdjBA)
+
+This type of cable is used when you need to connect two devices that use same wires to send and receive data. For example, consider connecting two computers together. If you use straight-through cable, with identical wiring in both ends, both computers will use wires 1 and 2 to send data. If computer A sends some packets to computer B, computer A will send that data using wires 1 and 2. That will cause a problem because computers expect packets to be received on wires 3 and 6, and your network will not work properly. This is why you need to use a crossover cable for such connections.
+
+> **NOTE**
+Newer devices support the Auto MDI-X capability to automatically detect and configure the required cable connection type. This removes the need for a specific cable type between certain devices. Also, note that the Gigabit Ethernet and faster standards use all four wire pairs to transfer data in both direction simultaneously.

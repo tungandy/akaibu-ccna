@@ -4,8 +4,33 @@ title: 'Network Tools'
 
 ## Ping explained
 
+**ping** is perhaps the most commonly used tool to troubleshoot a network. **Ping (Packet Internet Groper)** is included with most operating systems. It is invoked using a ping command and uses **ICMP (Internet Control Message Protocol)** to reports errors and provides information related to IP packet processing. Ping works by sending an ICMP echo request message to the specified IP address. If the computer with the destination IP address is reachable, it responds with an ICMP echo reply message.
+
+A ping command usually outputs some other information about a network performance, e.g. a round-trip time, a time to send an ICMP request packetand receive an ICMP reply packet.
+
+Here is an output of the ping command from Windows 7:
+
+![](https://drive.google.com/uc?export=view&id=1y_89h7mFq6c4jF7gFl_ZAWrqhLoB5lnk)
+
+In the example above we have pinged the ip address **10.10.100.1**. By default, ping on Windows sends four ICMP request packets. As you can see from the output above, the host with the IP address of 10.10.100.1 is reachable and has replied with four ICMP reply packets. You can also see that the remote host has replied within 1 ms (time `<` 1ms), which indicates that the network is not congested.
+
 ---
 
 ## Traceroute explained
 
----
+**Traceroute** is a command-line interface based tool used to identify the path used by a packet to reach its target. This tool also uses ICMP messages, but unlike ping, it identifies every router in a path taken by the packets. Traceroute is useful when troubleshooting network problems because it can help identify where exactly the problem is. You can figure out which router in the path to an unreachable target should be examined more closely as the probable cause of the network’s failure.
+
+Traceroute sends a series of ICMP echo request packets to a destination. First series of messages has a Time to Live (TTL) parameter set to 1, which means that the first router in a path will discard the packet and send an ICMP Time Exceeded message. TTL is then increased by one until the destination host is reached and an ICMP echo reply message is received. Originating host can then use received ICMP messages to identify all routers in a path.
+
+> **NOTE**
+The traceroute command on Windows is named **tracert**. On Unix and Cisco IOS traceroute it is invoked using the **traceroute** command.
+
+Here is an example of using the **tracert** command in Windows:
+
+![](https://drive.google.com/uc?export=view&id=10DT2iyKeN444T-Avt_CZfummGVjp3rB9)
+
+In the output above you can see that the **traceroute** command has listed the IP addresses of all of the routers in the path.
+
+### Traceroute on Unix-like operating systems
+
+Traceroute command on Unix works slighty different than the Windows version. It uses UDP packets with a large destination port number (33434 to 33534) that is unlikely to be used by any application at the destination host. Like the Windows version of the command, traceroute on Unix uses TTL to get the IP addresses of the intermediary routers. When a destination host is reached, it replies with an ICMP port unreachable message.
