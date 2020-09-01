@@ -1,16 +1,16 @@
 module.exports = {
   siteMetadata: {
-    siteTitle: `@rocketseat/gatsby-theme-docs`,
-    defaultTitle: `@rocketseat/gatsby-theme-docs`,
+    siteTitle: `AKAIBU CCNA`,
+    defaultTitle: `AKAIBU CCNA`,
     siteTitleShort: ``,
-    siteDescription: `Out of the box Gatsby Theme for creating documentation websites easily and quickly`,
+    siteDescription: `Learn CCNA`,
     siteUrl: `https://rocketdocs.netlify.com`,
-    siteAuthor: `@rocketseat`,
+    siteAuthor: `@AT`,
     siteImage: `/banner.png`,
     siteLanguage: `en`,
-    themeColor: `#7159c1`,
+    themeColor: `#EC5D0A`,
     basePath: `/`,
-    footer: `Theme by Rocketseat`,
+    footer: `Made with ❤️ 2020`,
   },
   plugins: [
     {

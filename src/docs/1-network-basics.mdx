@@ -1,0 +1,433 @@
+---
+title: 'Network Basics'
+---
+
+
+## What is a network?
+
+A computer network can be described as a system of interconnected devices that can communicate using some common standards (called protocols). These devices communicate to exchange resources (e.g. files and printers) and services.
+
+Here is an example network consisting of two computers connected together:
+
+![network of two computers only](https://drive.google.com/uc?export=view&id=1BZVkVdm5udH-NXzxwk9jYwSz1rpaFG3d)
+
+In the example above, the two computers are directly connected using a cable. This small network can be used to exchange data between just these two computers.
+
+What if we want to expand our network? Then we can use a network device, either a switch or a hub, to connect more than two computers together:
+
+![network of two computers only](https://drive.google.com/uc?export=view&id=1dO2LfVn1eFaqV8GU3ZUYoxVkcY5y9TPc)
+
+Now all of the devices on the network can communicate with each other.
+
+We’ll talk more about hubs and switches in just a moment. For now, just remember that these devices serve as a central point to which all of the computers connect to.
+
+---
+
+## OSI & TCP/IP models
+
+### OSI model
+OSI (Open Systems Interconnection) model was created by the International Organization for Standardization (ISO), an international standard-setting body. It was designed to be a reference model for describing the functions of a communication system. The OSI model provides a framework for creating and implementing networking standards and devices and describes how network applications on different computers can communicate through the network media.
+
+The OSI model has seven layers, with each layer describing a different function of data traveling through a network. Here is the graphical representation of these layers:
+
+![](https://drive.google.com/uc?export=view&id=1wI1YQ2a-HNw4zks7VnugRyXLdG44BL8F)
+
+The layers are usually numbered from the last one, meaning that the Physical layer is considered to be the first layer. It is useful to remember these layers, since there will certainly be a couple of questions on the CCNA exam regarding them. Most people learn the mnemonic „Please Do Not Throw Sausage Pizza Away“:
+
+![](https://drive.google.com/uc?export=view&id=1RyXu7IK6vq0nK42TPC1_sGaSzcj713wt)
+
+So, what is the purpose of these layers?
+They are most commonly used by vendors. They enable them to implement some functionality into a networking device, which then enables easier interoperability with devices from other vendors.
+
+Here is a brief description of each of the layers of the OSI model.
+
+- **Physical** – defines how to move bits from one device to another. It details how cables, connectors and network interface cards are supposed to work and how to send and receive bits.
+- **Data Link** – encapsulates a packet in a frame. A frame contains a header and a trailer that enable devices to communicate. A header (most commonly) contains a source and destination MAC address. A trailer contains the Frame Check Sequence field, which is used to detect transmission errors. The data link layer has two sublayers:
+
+    1. **Logical Link Control** – used for flow control and error detection.
+    2. **Media Access Control** – used for hardware addressing and for controlling the access method.
+
+- **Network** – defines device addressing, routing, and path determination. Device (logical) addressing is used to identify a host on a network (e.g. by its IP address).
+- **Transport** – segments big chunks of data received from the upper layer protocols. Establishes and terminates connections between two computers. Used for flow control and data recovery.
+- **Session** – defines how to establish and terminate a session between the two systems.
+- **Presentation** – defines data formats. Compression and encryption are defined at this layer.
+Application – this layer is the closest to the user. It enables network applications to communicate with other network applications.
+
+It is a common practice to reference a protocol by the layer number or layer name. For example, HTTPS is referred to as an application (or Layer 7) protocol. Network devices are also sometimes described according to the OSI layer on which they operate – e.g. a Layer 2 switch or a Layer 7 firewall.
+
+The following table shows which protocols reside on which layer of the OSI model:
+
+![](https://drive.google.com/uc?export=view&id=13FetOFo4Xx5SU8H0G1LXSA18IoWvP3nz)
+
+### TCP/IP model
+
+The TCP/IP model was created in the 1970s by the Defense Advance Research Project Agency (DARPA) as an open, vendor-neutral, public networking model. Just like the OSI model, it describes general guidelines for designing and implementing computer protocols. It consists of four layers: Network Access, Internet, Transport, and Application:
+
+![](https://drive.google.com/uc?export=view&id=1AwmiBGJpxq2RGlM8XBLP_MZI5botrId-)
+
+The following picture show the comparison between the TCP/IP model and OSI model:
+
+![](https://drive.google.com/uc?export=view&id=19w6G8cOzlxR_nZB-aJmCsup1Ki5vX28r)
+
+As you can see from the picture above, the TCP/IP model has fewer layers than the OSI model. The Application, Presentation, and Session layers of the OSI model are merged into a single layer in the TCP/IP model. Also, Physical and Data Link layers are called Network Access layer in the TCP/IP model. Here is a brief description of each layer:
+
+- **Link** – defines the protocols and hardware required to deliver data across a physical network.
+- **Internet** – defines the protocols for the logical transmission of packets over the network.
+- **Transport** – defines protocols for setting up the level of transmission service for applications. This layer is responsible for reliable transmission of data and the the error-free delivery of packets.
+- **Application** – defines protocols for node-to-node application communication and provide services to the application software running on a computer.
+
+### Differences between OSI and TCP/IP model
+
+There are some other differences between these two models, besides the obvious difference in the number of layers. OSI model prescribes the steps needed to transfer data over a network and it is very specific in it, defining which protocol is used at each layer and how. The TCP/IP model is not that specific. It can be said that the OSI model prescribes and TCP/IP model describes.
+
+---
+
+## Local area network (LAN)
+
+The term local area network (LAN) is commonly used to describe a network of devices in a limited area (a house, office, building…). This type of network is usually capable of achieving high data transfer rate (up to 10 Gbps!) at low cost. Examples of this type of network are a small office network inside a single building or your home network.
+
+A typical SOHO (small office/home office) LAN consist of PCs, printers, switches, routers, and cabling that connects all these devices together. The following figure shows a typical LAN:
+
+![](https://drive.google.com/uc?export=view&id=1TSII5_tY6mHRy_vWldc56Sv_ligLEowS)
+
+In the picture above we have two computers that are connected to a switch. The switch is then connected to a router that provides the LAN with access to the Internet.
+
+Some of the most popular LAN technologies are Ethernet, Token Ring and FDDI. Most LAN networks use TCP/IP to communicate. Twisted-pair cabling is usually used in a LAN.
+
+Ethernet is by far the most popular wired LAN technology. It defines wiring, signaling, connectors, frame formats, protocol rules, etc. Most modern LANs also support the wireless LAN (WLAN) technology, defined by the IEEE 802.11 standards. WLANs use radio waves instead of wires or cables for links between devices.
+
+> **NOTE**
+The term metropolitan area network is used to describe a network in a single metropolitan area, hence the name. This type of network is usually bigger than a LAN and smaller than a WAN. An example of this type of network would be a network that connects two company offices inside the same city.
+
+---
+
+## Wide area network
+
+The term **wide area network** is used to describe a network that spans multiple geographic locations. Consider an example. A company has two offices, one in London and one in Berlin. Both offices have a LAN. If the company connects these two LANs together using WAN technology, a WAN is created.
+
+The key difference between LANs and WANs is that the company usually doesn’t own WAN infrastructure. A company usually leases WAN services from a service provider. A WAN spanning multiple cities could look something like this:
+
+![](https://drive.google.com/uc?export=view&id=1nhL966Qlk07Fs-WdhCAWfECi9KyJr8l6)
+
+Frame Relay, ATM and X.25 are different types of WAN technologies. The Internet can also be considered a WAN.
+
+---
+
+## Encapsulation
+
+The term encapsulation is used to describe a process of adding headers and trailers around some data. This process can be explained with the four-layer TCP/IP model, with each step describing the role of the layer.  For example, here is what happens when you send an email using your favourite email program (such as Outlook or Thunderbird):
+
+1. the email is sent from the Application layer to the Transport layer.
+2. the Transport layer encapsulates the data and adds its own header with its own information, such as which port will be used and passes the data to the Internet layer
+3. the Internet layer encapsulates the received data and adds its own header, usually with information about the source and destination IP addresses. The Internet layer than passes the data to the Network Access layer
+4. the Network Access layer is the only layer that adds both a header and a trailer. The data is then sent through a physical network link.
+
+Here is a graphical representation of how each layer add its own information:
+
+![](https://drive.google.com/uc?export=view&id=1u1NBIFYL3r0gd-4ULD4p0hJddPUh8h9M)
+
+Each packet (header + encapsulated data) defined by a particular layer has a specific name:
+
+- **Frame** – encapsulated data defined by the Network Access layer. A frame can have both a header and a trailer.
+- **Packet** – encapsulated data defined by the Network layer. A header contains the source and destination IP addresses.
+- **Segment** – encapsulated data as defined by the Transport layer. Information such as the source and destination ports or sequence and acknowledgment numbers are included in the header.
+
+> **NOTE**
+The term decapsulation refers to the process of removing headers and trailers as data passes from lower to upper layers. This process happens on the computer that is receiving data.
+ 
+### Data encapsulation in the OSI model
+
+Just like with the TCP/IP layers, each OSI layer asks for services from the next lower layer. The lower layer encapsulates the higher layer’s data between a header (Data Link protocols also add a trailer).
+ 
+While the TCP/IP model uses terms like segment, packet and frame to refer to a data packet defined by a particular layer, the OSI model uses a different term: **protocol data unit (PDU)**. A PDU represent a unit of data with headers and trailers for the particular layer, as well as the encapsulated data. Since the OSI model has 7 layers, PDUs are numbered from 1 to 7, with the Physical layer being the first one. For example, the term Layer 3 PDU refers to the data encapsulated at the Network layer of the OSI model.
+
+Here is a graphical representation of all the PDUs in the OSI model:
+
+![](https://drive.google.com/uc?export=view&id=1X6oMGnyQN1QSS5WV1kljqXMZ6U9P4a0O)
+
+---
+
+## Ethernet explained
+
+**Ethernet** is the most used networking technology for LANs today. It defines wiring and signaling for the Physical layer of the OSI model. For the Data Link layer, it defines frame formats and protocols.
+
+Ethernet is described as **IEEE 802.3** standard. It uses **Carrier Sense Multiple Access with Collision Detection (CSMA/CD)** access method and supports speeds up to 100 Gbps. It can use coaxial, twisted pair and fiber optic cables. Ethernet uses frames to with source and destination MAC addresses to deliver data.
+
+> **NOTE**
+The term **Ethernet LAN** refers to a combination of computers, switches, and different kinds of cables that use the Ethernet standard to communicate over the network. It is by far the most popular LAN technology today.
+
+---
+
+## Ethernet frame
+
+We have already learned that encapsulated data defined by the Network Access layer is called an Ethernet frame. An Ethernet frame starts with a header, which contains the source and destination MAC addresses, among other data. The middle part of the frame is the actual data. The frame ends with a field called Frame Check Sequence (FCS).
+
+The Ethernet frame structure is defined in the IEEE 802.3 standard. Here is a graphical representation of an Ethernet frame and a description of each field in the frame:
+
+![](https://drive.google.com/uc?export=view&id=1KrDW4zdNzENEnGfo_PND0KwSU5JosOtD)
+
+- **Preamble** – informs the receiving system that a frame is starting and enables synchronisation.
+- **SFD (Start Frame Delimiter)** – signifies that the Destination MAC Address field begins with the next byte.
+- **Destination MAC** – identifies the receiving system.
+- **Source MAC** – identifies the sending system.
+- **Type** – defines the type of protocol inside the frame, for example IPv4 or IPv6.
+- **Data and Pad** – contains the payload data. Padding data is added to meet the minimum length requirement for this field (46 bytes).
+- **FCS (Frame Check Sequence)** – contains a 32-bit Cyclic Redundancy Check (CRC) which allows detection of corrupted data.
+
+The FCS field is the only field present in the Ethernet trailer. It allows the receiver to discover whether errors occurred in the frame. Note that Ethernet only detects in-transit corruption of data – it does not attempt to recover a lost frame. Other higher level protocols (e.g. TCP) perform error recovery.
+
+---
+
+## MAC & IP addresses
+
+### MAC address
+
+A **Media Access Control (MAC)** address is a 48-bit (6 bytes) address that is used for communication between two hosts in an Ethernet environment. It is a hardware address, which means that it is stored in the firmware of the network card.
+
+Every network card manufacturer gets a universally unique 3-byte code called the **Organizationally Unique Identifier (OUI)**. Manufacturers agree to give all NICs a MAC address that begins with the assigned OUI. The manufacturer then assigns a unique value for the last 3 bytes, which ensures that every MAC address is globaly unique.
+ 
+MAC addresses are usually written in the form of 12 hexadecimal digits. For example, consider the following MAC address:
+
+> D8-D3-85-EB-12-E3
+
+Every hexadecimal character represents 4 bits, so the first six hexadecimal characters represent the vendor (Hewlett Packard in this case).
+
+> How to find out your own MAC address?
+
+If you are using Windows, start the Command Prompt (Start – Programs – Accessories – Command Prompt). Type the `ipconfig/all` command and you should see a field called **Physical Address** under the Ethernet adapter settings:
+
+![](https://drive.google.com/uc?export=view&id=12eyD2ajT9jHnJVDjA4xzkbKqE_C-lcHV)
+
+If you are using Linux, type the `ifconfig` command. You should see your MAC address referred to as **HWaddress**.
+
+![](https://drive.google.com/uc?export=view&id=1_SkjOxFdolvxwATvGIyvjeEO8vu3kNF1)
+
+### IP address
+
+An IP address is a 32-bit number that identifies a host on a network. Each device that wants to communicate with other devices on a TCP/IP network needs to have an IP address configured. For example, in order to access the Internet, your computer will need to have an IP address assigned (usually obtained by your router from the ISP).
+
+An IP address is usually written in the form of four decimal numbers seperated by periods (e.g. 10.0.50.1). The first part of the address represents the network the device is on (e.g. 10.0.0.0), while the second part of the address identifies the host device (e.g. 10.0.50.1).
+ 
+In contrast to MAC address, an IP address is a logical address. It can be configured manually or it can be obtained from a DHCP server.
+
+> **NOTE**
+The term IP address is usually used for IPv4, which is the fourth version of the IP protocol. A newer version exists, IPv6, and uses 128-bit addressing.
+ 
+### Private IP addresses
+
+There are three ranges of addresses that can be used in a private network (e.g. your home LAN). These addresses are not routable through the Internet.
+
+Private addresses ranges are:
+
+- 10.0.0.0 – 10.255.255.255
+- 172.16.0.0 – 172.31.255.255
+- 192.168.0.0 – 192.168.255.255
+
+### How to find out your IP address
+
+If you are using Windows, start the Command Prompt (Start – Programs – Accessories – Command Prompt). Enter the ipconfig command. You should see a field called **IP Address**:
+
+![](https://drive.google.com/uc?export=view&id=1_U8oGvjgbVjiNyY6jwXzIqz-qG-Zci26)
+
+### Linux users:
+
+Enter `ifconfig`. You should see a field called **inet addr**:
+
+![](https://drive.google.com/uc?export=view&id=1l2JEWM5i2DgKA2uRzpjwL8zLrnpdw6Yi)
+
+---
+
+## Unicast, multicast, and broadcast addresses
+
+There are three types of Ethernet addresses:
+
+### Unicast Addresses
+
+Unicast addresses represent a single LAN interface. A unicast frame will be sent to a specific device, not to a group of devices on the LAN:
+
+![](https://drive.google.com/uc?export=view&id=1zERJOcNaq5vS6yyXvV9apPjehhmy1B8m)
+
+The unicast address will have the value of the MAC address of the destination device.
+
+### Multicast Addresses
+
+Multicast addresses represent a group of devices in a LAN. A frame sent to a multicast address will be forwarded to a group of devices on the LAN:
+
+![](https://drive.google.com/uc?export=view&id=1NGvzKn3Ec1pB9iauvdBLjaUfGJCtt4Du)
+
+Multicast frames have a value of 1 in the least-significant bit of the first octet of the destination address. This helps a network switch to distinguish between unicast and multicast addresses. One example of an Ethernet multicast address would be **01:00:0C:CC:CC:CC**, which is the address used by CDP (Cisco Discovery Protocol).
+
+### Broadcast Addresses
+
+Broadcast addresses represent all device on the LAN. Frames sent to a broadcast address will be delivered to all devices on the LAN:
+
+![](https://drive.google.com/uc?export=view&id=12I485y5u8s5VEanh9vIVK2zDLMVgaMgl)
+
+The broadcast address has the value of **FFFF.FFFF.FFFF** (all binary ones). The switch will flood broadcast frames out all ports except the port that it was received on.
+
+---
+
+## Network devices
+
+Let’s take a look at the network devices commonly found in today’s LANs..
+
+### Hubs
+
+A hub serves as a central point to which all of the hosts in a network connect to. A Hub is an OSI Layer 1 device and has no concept of Ethernet frames or addressing. It simply receives a signal from one port and sends it out to all other ports. Here is an example 4-port Ethernet hub (source: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=1YC5--94KNGvN7ceHQqY4owusTbTPqu3e)
+
+Today, hubs are considered obsolete and switches are commonly used instead.
+
+### Switches
+
+Like hubs, a switch is used to connect multiple hosts together, but it has many advantages over a hub. Switch is an OSI Layer 2 device, which means that it can inspect received traffic and make forwarding decisions. Each port on a switch is a separate collision domain and can run in a full duplex mode (photo credit: Wikipedia).
+
+![](https://drive.google.com/uc?export=view&id=1XOqDImxth5l1JCxbnqGV2T4z3voveNR6)
+
+### Routers
+
+A router is a device that routes packets from one network to another. A router is most commonly an OSI Layer 3 device. Routers divide broadcast domains and have traffic filtering capabilities.
+
+The picture below shows a typical home router:
+
+![](https://drive.google.com/uc?export=view&id=1NZRSMHt-AyaUJnmT0Axb1FlFrNdQX-l6)
+
+In the next sections we will describe each of these devices in more detail.
+
+---
+
+## Network hubs explained
+
+A **hub** serves as a central point to which all of the hosts in a network connect to. It is an OSI Layer 1 device and has no concept of Ethernet frames or addressing – it simply receives the signal from one port and sends it out to all other ports. Here is an example 4-port Ethernet hub (image source: Wikipedia):
+
+![](https://drive.google.com/uc?export=view&id=1oOCCmcxUKK_dY7hFTGuRnJin53mYrdsF)
+
+As mentioned above, hubs have no way of distinguishing out which port a signal should be sent to; instead, an electrical signal is sent out each port. All nodes on the network will receive data, and the data will eventually reach the correct destination, but with a lot of unnecessary network traffic:
+
+![](https://drive.google.com/uc?export=view&id=1k_aFfBdsyO6YI-sVckY-BRD3uP2-9Gc2)
+
+In the example above you can see that the hub has sent out the receiving signal out all other ports, except the incoming port. Hubs are therefore considered obsolete and switches are commonly used instead in modern LANs. Hubs have numerous disadvantages over switches, such as:
+
+- they are not aware of the traffic that passes through them
+- they create only one large collision domain
+- a hub typically operates in half duplex
+- there is also a security issue with hubs since the traffic is forwarded to all ports (except the source port), which makes it possible to capture all traffic on a network with a network sniffer!
+
+> **NOTE**
+Hubs are also known as **multiport repeaters** because that is basically what they do – repeat the electrical signal that comes in one port out all other ports (except the incoming port).
+
+---
+
+## Network bridge explained
+
+A **network bridge** is a device that divides a network into segments. Each segment represent a separate collision domain, so the number of collisions on the network is reduced. Also, because each collision domain has its own separate bandwidth, a bridge also improves the overall network performance.
+
+> **NOTE**
+Unlike hubs, bridges allow multiple devices to send at the same time. This is why there are considered to be predecessors of network switches.
+
+A bridge works at the Data link layer (Layer 2) of the OSI model, just like a switch does. It inspects incoming traffic and decide whether to forward it or filter it. Each incoming Ethernet frame is inspected for destination MAC address. If the bridge determines that the destination host is on another segment of the network, it forwards the frame to that segment.
+
+Consider the following network:
+
+![](https://drive.google.com/uc?export=view&id=1CDbOpxO2RCiDLc6Zn4bugvrXI3y2Sb4m)
+
+In the example above we have a network of four computers. The network is divided into segments by a bridge. Each segment is a separate collision domain with its own bandwidth. Let’s say that Host A wants to communicate with Host C. Host A will send the frame with the Host C’s destination MAC address to the bridge. The bridge will inspect the frame and forward it to the segment of the network Host C is on.
+
+Network bridges offered substantial improvements over network hubs, but are not widely used anymore in modern LANs – switches are commonly used instead. Here is why:
+
+- most bridges have only 2 or 4 ports. A switch can have tens or even hundreds of ports
+- bridges are software based, while switches are hardware-based and use chips (ASICs) when making forwarding decisions, which makes them much faster than bridges
+- switches can have multiple spanning-tree instances, bridges can have only one
+- switches can have multiple broadcast domains (one per VLAN)
+
+---
+
+## Network switch explained
+
+Just like hubs and bridges, a switch is used to connect multiple hosts together, but it has many advantages over them. Switch is an OSI Layer 2 device, which means that it can inspect received traffic and make forwarding decisions. Each port on a switch is a separate collision domain and can run in a full duplex mode (photo credit: Wikipedia).
+
+![](https://drive.google.com/uc?export=view&id=1uWK5Mxiiith-rtHxu-RYloLtoaEkaxLG)
+
+A switch manages the flow of data across a network by inspecting the incoming frame’s destination MAC address and forwarding the frame only to the host for which the data was intended. Each switch has a dynamic table (called the MAC address table) that maps MAC addresses to ports. With this information, a switch can identify which system is sitting on which port and where to send the received frame.
+
+To better understand how a switch works, consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1nrNNLrzUhspmHS3b6LDS4Rgfd_Bgi9Sh)
+
+As you can see from teh example above, Host A is trying to communicate with Host C and sends a packet with the Host C’s destination MAC address. The packet arrives at the switch, which looks at the destination MAC address. The switch then searches that MAC address in its MAC address table. If the MAC address is found, the switch then forwards the packet only out the port connected to the frame’s destination. Hosts connected to other ports will not receive the frame.
+
+---
+
+## Network router explained
+
+A **router** is a network device that routes packets from one network to another. It is usually connected to two or more different networks. When a packet comes to a router port, the router reads the address information in the packet to determine out which port the packet will be sent. For example, a router provides you with the internet access by connecting your LAN with the Internet.
+
+> **NOTE**
+A router is most commonly an OSI Layer 3 device, since its forwarding decision is based on the information of the OSI Layer 3 – the destination IP address. Routers divide broadcast domains, provide full duplex communication, and have traffic filtering capabilities.
+
+The picture below shows a typical home router:
+
+![](https://drive.google.com/uc?export=view&id=1ftom_TJ885o04png42zxt3H3ETzjcsIw)
+
+If two hosts from different networks want to communicate, they will need a router in order to exchange data. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1U2RDKyOUbBFNH6T2Imd-oWiAik6wq0ck)
+
+We have a network of three hosts and a router. Note that each computer is on a different network. Host A wants to communicate with Host B and sends the packet with the Host B’s IP address (10.0.0.20) to the router. The router receives the packet, compares the packet’s destination IP address to the entries in its routing table and finds a match. It then sends the packet out the interface associated with the network 10.0.0.0/24. Only Host B will receive and process the packet. In fact, Host C will not even be aware that the communication took place.
+
+---
+
+## Half duplex and full duplex
+
+In telecommunication, a duplex communication system is a point-to-point system of two devices that can communicate with each other in both direction. These two types of duplex communication systems exist in Ethernet environments:
+
+- **half-duplex** – a port can send data only when it is not receiving data. In other words, it cannot send and receive data at the same time. Network hubs run in half-duplex mode in order to prevent collisions. Since hubs are rare in modern LANs, the half-duplex system is not widely used in Ethernet networks anymore.
+- **full-duplex** – all nodes can send and receive on their port at the same time. There are no collisions in full-duplex mode, but the host NIC and the switch port must support the full-duplex mode. Full-duplex Ethernet uses two pairs of wires at the same time instead of a single wire pair like half-duplex.
+The following picture illustrates the concept:
+
+![](https://drive.google.com/uc?export=view&id=1MHK1BPmIYaCs0Ev-lrj-Dj_zqRq-BsQy)
+
+Because hubs can only operate in half duplex, the switch and hub will negotiate to use half-duplex, which means that only one device can send data at the time. The workstation on the right supports full duplex, so the link between the switch and the workstation will use full duplex, with both devices sending data simultaneously.
+
+Each NIC and switch port has a duplex setting. For all links between hosts and switches, or between switches, the full-duplex mode should be used. However, for all links connected to a LAN hub, the half-duplex mode should be used in order to prevent a duplex mismatch that could decrease network performance.
+ 
+In Windows, you can set up duplex settings in the **Properties** window of your network adapter:
+
+![](https://drive.google.com/uc?export=view&id=1ArAKTTaU_kyB_fDSZ86cO4CEmlRMpgnW)
+
+---
+
+## IEEE Ethernet standards
+
+IEEE Ethernet standards
+Ethernet is defined in a number of IEEE 802.3 standards. These standards define the physical and data-link layer specifications for Ethernet. The most important 802.3 standards are:
+
+- **10Base-T (IEEE 802.3)** – 10 Mbps with category 3 unshielded twisted pair (UTP) wiring, up to 100 meters long.
+- **100Base-TX (IEEE 802.3u)** – known as Fast Ethernet, uses category 5, 5E, or 6 UTP wiring, up to 100 meters long.
+- **100Base-FX (IEEE 802.3u)** – a version of Fast Ethernet that uses multi-mode optical fiber. Up to 412 meters long.
+- **1000Base-CX (IEEE 802.3z)** – uses copper twisted-pair cabling. Up to 25 meters long.
+- **1000Base-T (IEEE 802.3ab)** – Gigabit Ethernet that uses Category 5 UTP wiring. Up to 100 meters long.
+- **1000Base-SX (IEEE 802.3z)** – 1 Gigabit Ethernet running over multimode fiber-optic cable.
+- **1000Base-LX (IEEE 802.3z)** – 1 Gigabit Ethernet running over single-mode fiber.
+- **10GBase-T (802.3.an)** – 10 Gbps connections over category 5e, 6, and 7 UTP cables.
+
+Notice how the first number in the name of the standard represents the speed of the network in megabits per second. The word **base** refers to **baseband**, meaning that the signals are transmitted without modulation. The last part of the standard name refers to the cabling used to carry signals. For example, **1000Base-T** means that the speed of the network is up to 1000 Mbps, baseband signaling is used, and the twisted-pair cabling will be used (**T** stands for **twisted-pair**).
+
+---
+
+## Cisco three-layer hierarchical model
+
+Because networks can be extremely complicated, with multiple protocols and diverse technologies, Cisco has developed a layered hierarchical model for designing a reliable network infrastructure. This three-layer model helps you design, implement, and maintain a scalable, reliable, and cost-effective network. Each of layers has its own features and functionality, which reduces network complexity.
+
+Here is an example of the Cisco hierarchical model:
+
+![](https://drive.google.com/uc?export=view&id=1OWnosd0EWVXewhzYeGIZa8re23GYKmCs)
+
+Here is a description of each layer:
+
+- **Access** – controls user and workgroup access to the resources on the network. This layer usually incorporates Layer 2 switches and access points that provide connectivity between workstations and servers. You can manage access control and policy, create separate collision domains, and implement port security at this layer.
+- **Distribution** – serves as the communication point between the access layer and the core. Its primary functions are to provide routing, filtering, and WAN access and to determine how packets can access the core. This layer determines the fastest way that network service requests are accessed – for example, how a file request is forwarded to a server – and, if necessary, forwards the request to the core layer. This layer usually consists of routers and multilayer switches.
+- **Core** – also referred to as the network backbone, this layer is responsible for transporting large amounts of traffic quickly. The core layer provides interconnectivity between distribution layer devices it usually consists of high speed devices, like high end routers and switches with redundant links.
+
+---
