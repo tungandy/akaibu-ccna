@@ -4,36 +4,259 @@ title: 'VLAN'
 
 ## What is a VLAN?
 
+**VLANs (Virtual LANs)** are logical grouping of devices in the same broadcast domain. VLANs are usually configured on switches by placing some interfaces into one broadcast domain and some interfaces into another. Each VLAN acts as a subgroup of the switch ports in an Ethernet LAN.
+
+VLANs can spread across multiple switches, with each VLAN being treated as its own subnet or broadcast domain. This means that frames broadcasted onto the network will be switched only between the ports within the same VLAN.
+
+A VLAN acts like a physical LAN, but it allows hosts to be grouped together in the same broadcast domain even if they are not connected to the same switch. Here are the main reasons why VLANs are used:
+
+- VLANs increase the number of broadcast domains while decreasing their size.
+- VLANs reduce security risks by reducing the number of hosts that receive copies of frames that the switches flood.
+- you can keep hosts that hold sensitive data on a separate VLAN to improve security.
+- you can create more flexible network designs that group users by department instead of by physical location.
+- network changes are achieved with ease by just configuring a port into the appropriate VLAN.
+
+The following topology shows a network with all hosts inside the same VLAN:
+
+![](https://drive.google.com/uc?export=view&id=1PDs55i-yCfsXqZpX0u6kt8WlnQidqd9Z)
+
+Without VLANs, a broadcast sent from host A would reach all devices on the network. Each device will receive and process broadcast frames, increasing the CPU overhead on each device and reducing the overall security of the network.
+
+By placing interfaces on both switches into a separate VLAN, a broadcast from host A would reach only devices inside the same VLAN, since each VLAN is a separate broadcast domain. Hosts in other VLANs will not even be aware that the communication took place. This is shown in the picture below:
+
+![](https://drive.google.com/uc?export=view&id=1Aazhvn6pnwjskLBEBVC8L53zNktzr6ao)
+
+> **NOTE**
+To reach hosts in a different VLAN, a router is needed.
+
 ---
 
 ## Access and trunk ports
+
+If you intend to use VLANs in your network, you will need to configure some ports on a switch as access ports and other as trunk ports. Here is a description each port type:
+
+- **access port** – a port that can be assigned to a single VLAN. This type of interface is configured on switch ports that are connected to end devices such as workstations, printers, or access points.
+- **trunk port** – a port that is connected to another switch. This type of interface can carry traffic of multiple VLANs, thus enabling you to extend VLANs across your entire network. Frames are tagged by assigning a VLAN ID to each frame as they traverse between switches.
+The following picture illustrates the difference:
+
+![](https://drive.google.com/uc?export=view&id=1kD3mivjf4tAT29aL483LZ3t15r0z2zRu)
+
+In the example network pictured above, the switch ports connected to workstations would be configured as access ports. The ports that connect switches together would be configured as trunk ports.
 
 ---
 
 ## Configuring VLANs
 
+By default, all ports on a switch are in the VLAN 1. We can verify that by typing the _show vlan_ command from the IOS enable mode of a switch:
+
+![](https://drive.google.com/uc?export=view&id=1eQVh1xm7l1EPixLJxnIUB62ftVmseHo2)
+
+In the picture above, you can see that all of the 24 ports of the switch are in the same VLAN, namely VLAN 1.
+
+Two steps are required to create a VLAN and assign a switch port to the VLAN:
+
+create a vlan using the _vlan NUMBER_global mode command
+assing a port to the VLAN by using two interface subcommands. The first command is the _switchport mode access_ command. This command specifies that the interface is an access interface. The second command is the _switchport access vlan NUMBER_ command. This command assigns the interface to a VLAN.
+
+Here is an example of assigning the VLAN 2 to the interface:
+
+![](https://drive.google.com/uc?export=view&id=1SLGSD2kDDj5Z3f8JP1MMzxL_GuYJSRPl)
+
+The first command (_vlan 2_) created the VLAN 2. We’ve then entered the Fa0/1 subinterface mode and configured the interface as an access interface that belongs to VLAN 2. To verify this, we can again use the _show vlan_ command:
+
+![](https://drive.google.com/uc?export=view&id=1_CG56kXpucqYNAmu9i1eJQIuWE8QNEJm)
+
 ---
 
 ## Configuring access & trunk ports
+
+To configure an interface to be an access interface, the _switchport mode acess interface_ command is used. This type of interface can be assigned only to a single VLAN.
+
+To configure a trunk interface, the _switchport mode trunk_ interface command is used. This type of interface can carry traffic of multiple VLANs.
+
+An example will help you understand the concept.
+
+![](https://drive.google.com/uc?export=view&id=1rccc4tp8tGfv6083XwPD_eTWfXWqiBT7)
+
+Host A and host B are in different VLANs, VLAN 1 and VLAN 2. These ports need to be configured as access ports and assigned to their respective VLANs by using the following sequence of commands:
+
+![](https://drive.google.com/uc?export=view&id=1QB0OpVGHgy4rjD0IkcRNipjQKyGndZPD)
+
+Because the link between SW1 and SW2 needs to carry traffic of multiple VLANs, it needs to be configured as a trunk interface. This is done by using the following commands on both SW1 and SW2:
+
+On SW1:
+
+![](https://drive.google.com/uc?export=view&id=1SOsE5h6NKHUU1GR2MQASz_5WNh2XZlxt)
+
+On SW2:
+
+![](https://drive.google.com/uc?export=view&id=1JRsbnAN3ViDvbUwJFwKFfzzEaoVX2xXs)
+
+Now the link between SW1 and SW2 can carry traffic from both the VLAN1 and VLAN2. You can verify that an interface is indeed a trunk interface by using the _show interface Fa0/3 switchport_ command on SW1:
+
+![](https://drive.google.com/uc?export=view&id=1cMAQg7zeDvTBm9WoiYhBU1nCwzjMD-g7)
+
+> **NOTE**
+VLAN 1 doesn’t have to be created, it exists by default. Also, by default, all ports are in the VLAN 1, so Fa0/1 doesn’t need the switchport access vlan 1 command.
 
 ---
 
 ## Frame tagging
 
+To identify the VLAN a packet is belonging to, switches use tagging to assign a numerical value to each frame in a network with multiple VLANs. This is done to ensure that switches know out which ports to forward frames.
+
+For example, consider the following network topology.
+
+![](https://drive.google.com/uc?export=view&id=1dwX9j7hvwC6A2Un2N89Qp7b2YhJQiDmo)
+
+There are two VLANs in the toplogy pictured above, namely VLAN 3 and VLAN 4. Host A sends a broadcast packet to switch SW1. Switch SW1 receives the packet, tags the packet with the VLAN ID of 3 and sends it to SW2. SW2 receives the packet, looks up at the VLAN ID, and forwards the packet only out the port Fa0/1, since only that port is in VLAN 3. Host B and host C will not receive the packet because they are in different VLAN than host A.
+
+> **NOTE**
+When forwarding a tagged frame to a host device a switch will remove the VLAN tag, since host devices don’t understand tagging and would drop the packet.
+
 ---
 
 ## IEEE 802.1Q
+
+**IEEE 802.1Q** is one of the VLAN tagging protocols supported by Cisco switches. This standard was created by the Institute of Electrical and Electronics Engineers (IEEE), so it an open standard and can be used on non-Cisco switches.
+
+To identify to which VLAN a frame belongs to, a field is inserted into the frame’s header.
+
+Original frame:
+
+[](https://drive.google.com/uc?export=view&id=10RVyattl4Qxw0o9EBTk02nxj2gkBEo0e)
+
+802.1Q frame:
+
+[](https://drive.google.com/uc?export=view&id=1W8Aa7buJOUOEIlnQWihenFJgm8SnmnBm)
+
+An example will attempt to clarify the concept. Let’s say that we have a network of 2 switches and 4 hosts. Hosts A and host D are in VLAN 2, while hosts B and C are in VLAN 3.
+
+[](https://drive.google.com/uc?export=view&id=1KWi72q-OhGSsNLGBbD-WCPg82opAXTXE)
+
+On the segment between two switches, a process called VLAN trunking is used. Let’s say that host A sends a broadcast frame. SW1 “tags” the frame by inserting the VLAN ID in the header of the frame before sending the frame to SW2. SW2 receives the frame and knows that the frame belongs to VLAN 3, so it sends the frame only to host D, since that host is in VLAN 3.
 
 ---
 
 ## Inter-Switch Link (ISL)
 
+Another VLAN tagging protocol is **Inter-Switch Link (ISL)**. This protocol is Cisco proprietary, which means that, unlike 802.1Q, it can be used only between Cisco switches. It is considered to be deprecated, and newer Cisco switches don’t even support it.
+
+ISL works by encapsulating a frame in an ISL header and trailer. The encapsulated frame remains unchanged. The VLAN ID is included in the ISL header.
+
+Original frame:
+
+[](https://drive.google.com/uc?export=view&id=16Xu9djzNa7J0PZCKCc41RyiBM5swbd7d)
+
+ISL frame:
+
+[](https://drive.google.com/uc?export=view&id=1YJQApiIP0haFIYkZXlmncmKXnQeWSfUu)
+
 ---
 
 ## Configuring voice VLANs
+
+Most corporate networks today use IP telephony. This means that the phones are connect to the same network and use the same cabling as other network devices, such as workstations or routers. Since offices usually have only a single UTP cable to each desk, most of the IP phones today include a small switch that enable you to connect your PC to the phone sitting on the desk, and then connect the phone to the local network.
+
+Consider the backside of an IP telephone **Yealink T21**:
+
+[](https://drive.google.com/uc?export=view&id=16PJW2ycoWluneYcsu8mYd-R9P0MLvHnG)
+
+As you can see from the picture, this phone has two UTP ports. One port is connected to the local network, while the other port can be connected to the PC.
+
+The port on the phone connected to the switch can carry both data and voice traffic. To enable this, we need to define two VLANs on the switch port – data VLAN and voice VLAN. Here is how we can do that:
+
+```json
+SW1(config)#vlan 5
+SW1(config)#vlan 20
+SW1(config)#int fa0/1
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 5
+SW1(config-if)#switchport voice vlan 20
+```
+
+We’ve created two VLANs – VLAN 5 that will be used for data sent by the PC and VLAN 20 for IP phone’s voice traffic. We’ve then placed the port into both VLANs. The keyword voice indicates that the VLAN 20 will be a _voice_ VLAN.
+
+To verify that the interface indeed carries data from both VLANs, we can use the _show interfaces Fa0/1 switchport_ command:
+
+```json
+Switch#show interfaces fa0/1 switchport
+Name: Fa0/1
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+Administrative Trunking Encapsulation: dot1q
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: Off
+Access Mode VLAN: 5 (VLAN0005)
+Trunking Native Mode VLAN: 1 (default)
+Voice VLAN: 20
+Administrative private-vlan host-association: none
+Administrative private-vlan mapping: none
+...
+```
+
+The lines _Access Mode VLAN: 5 (VLAN0005)_ and _Voice VLAN: 20_ indicate that the interface is indeed carrying traffic from both VLANs.
+
+> **NOTE**
+Some IP phones can be automatically configured with appropriate VLANs using protocols such as LLDP or CDP. However, on some models you will need to manually configure data and voice VLANs on the phone using its web interface.
 
 ---
 
 ## Configuring allowed VLANs
 
----
+By default, all VLANs are allowed across a trunk link on a Cisco switch. We can verify that using the _show interfaces trunk_ command:
+
+```json
+SW1#show interfaces trunk 
+Port        Mode         Encapsulation  Status        Native vlan
+Fa0/1       on           802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Fa0/1       1-1005
+
+Port        Vlans allowed and active in management domain
+Fa0/1       1,5,10
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Fa0/1       1,5,10
+```
+
+In the output above you can see that all VLANs (1 through 1005) are allowed on the trunk by default.
+
+We can prevent traffic from certain VLANs from traversing a trunk link using the following interface mode command:
+
+```json
+(config-if)#switchport trunk allowed vlan {add | all | except | remove} vlan-list
+```
+
+For example, to prevent traffic from VLAN 5 to traverse the trunk link, we would use the following command:
+
+```json
+SW1(config)#int fa0/1
+SW1(config-if)#switchport trunk allowed vlan remove 5
+```
+
+The same command needs to be entered on the switch on the other end of the link.
+
+To verify that the traffic from VLAN 5 will indeed be blocked from traversing a trunked link, we can enter the _show interfaces trunk_ command again:
+
+```json
+SW1#show interfaces trunk 
+Port        Mode         Encapsulation  Status        Native vlan
+Fa0/1       on           802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Fa0/1       1-4,6-1005
+
+Port        Vlans allowed and active in management domain
+Fa0/1       1,10
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Fa0/1       none
+```
+
+Notice how now only VLANs 1-4 and 6-1005 are allowed on trunk.
+
+> **NOTE**
+You can use the _switchport trunk allowed vlan all_ interface mode command to reset the switch port to its original default setting (permitting all VLANs on the trunk).

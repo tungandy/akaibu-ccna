@@ -4,176 +4,1819 @@ title: 'Misc'
 
 ## Wildcard masks
 
+Wildcard masks are used to specify a range of network addresses. They are commonly used with routing protocols (like OSPF) and access lists.
+
+Just like a subnet mask, a wildcard mask is 32 bits long. It acts as an inverted subnet masks, but with wildcard mask, the zero bits indicate that the corresponding bit position must match the same bit position in the IP address. The one bits indicate that the corresponding bit position doesn’t have to match the bit position in the IP address.
+
+Here is an example of using a wildcard mask to include only the desired interfaces in the OSPF routing process:
+
+![](https://drive.google.com/uc?export=view&id=18p4a2wDeVgUoOd3BFekBCaBgzlFcYimY)
+
+Router R1 has three networks directly connected. To include only the 10.0.1.0 subnet in the OSPF routing process, the following network command can be used:
+
+![](https://drive.google.com/uc?export=view&id=1wKgnVqJIWvr5sFOug6e9xXXBudDDieIA)
+
+Let’s break down the wildcard part of the command. To do that, we need to use binary numbers instead of decimal notation.
+
+```json
+10.0.1.0 = 00001010.00000000.00000001.00000000
+0.0.0.255 = 00000000.0000000.00000000.11111111
+```
+
+The theory says that the zero bits of the wildcard mask have to match the same position in the IP address. So, let’s write the wildacard mask below the IP address:
+
+```json
+00001010.00000000.00000001.00000000
+00000000.00000000.00000000.11111111
+```
+
+As you can see from the output above, the last octet doesen’t have to match, because the wildcard mask bits are all ones. The first 24 bits have to match, because of the wildcard mask bits of all zeros. So, in this case, wildcard mask will match all addresses that begins with 10.0.1.X. In our case, only one network will be matched, 10.0.1.0/24.
+
+What is we want to match both 10.0.0.0/24 and 10.0.1.0/24? Than we will have to use different wildcard mask. We need to use the wildcard mask of 0.0.1.255. Why is that? Well, we again need to write down the addresses in binary:
+
+```json
+00001010.00000000.00000000.00000000 = 10.0.0.0
+00001010.00000000.00000001.00000000 = 10.0.1.0
+00000000.00000000.00000001.11111111 = 0.0.1.255
+```
+
+From the output above, we can see that only the first 23 bits have to match (notice that the third octet of the wildcard mask has a 1 at the end). That means that all addresses in the range of 10.0.0.0 – 10.0.1.255 will be matched. So, in our case, we have successfully matched both addresses, 10.0.0.0 and 10.0.1.0.
+
+> **NOTE**
+Wildcard mask of all zeros (0.0.0.0) means that the entire IP address have to match in order for a statement to execute. For example, if we want to match only the IP address of 192.168.0.1, the command used would be 192.168.0.1 0.0.0.0.
+A wildcard mask of all ones (255.255.255.255) means that no bits have to match. This basically means that all addresses will be matched.
+
 ---
 
 ## Setting up Telnet
+
+To access a Cisco device using telnet, you first need to enable remote login. Cisco devices usually supports 16 concurrent virtual terminal sessions, so the first command usually looks like this:
+
+```json
+HOSTNAME(config)line vty 0 15
+```
+
+To enable remote login, the _login_ command is used from the virtual terminal session mode:
+
+```json
+HOSTNAME(config-vty)login
+```
+
+Next, you need to define a password. This is done using the password command from the virtual terminal session mode:
+
+```json
+HOSTNAME(config-vty)password PASSWORD
+```
+
+Let’s try this on a real router. First, we will try to access the router without enabling telnet on a device:
+
+![](https://drive.google.com/uc?export=view&id=1N5biQ2peRweS-DGnbcdKrjcFjpnNwCDo)
+
+As you can see in the picture above, we can not access a Cisco device using telnet before setting up the password. Let’s do that:
+
+![](https://drive.google.com/uc?export=view&id=1CEdvky62QWHmCgiG57Dn5cKlpsS3zYdO)
+
+Now, let’s try to access our device:
+
+![](https://drive.google.com/uc?export=view&id=1GzjtUGs4JXLbAOwieQpUfPBR9kq7PeTD)
+
+This time, because telnet was configured on the device, we have successfully telnetted to the device.
 
 ---
 
 ## Setting up SSH
 
+To enable secure access to your Cisco device, you can use SSH instead of Telnet. SSH uses encryption to secure data from eavesdropping.
+
+To enable SSH, the following steps are required:
+
+1. set up a hostname and and a domain name.
+2. configure local username and password.
+3. generate RSA public and private keys.
+4. allow only SSH access.
+
+The following example shows the configuration of the first three steps:
+
+![](https://drive.google.com/uc?export=view&id=1wb31DdUPzSIC7EysKTz9HPKJ76t7KnXC)
+
+First, we have defined the device hostname by using the _hostname R1_ command. Next, we have defined the domain name by using the _ip domain-name cisco_ command. After that, the local user is created by using the _username study password ccna_ command. Next, we need to enable only the SSH access to a device. This is done by using the _transport input ssh_ command:
+
+![](https://drive.google.com/uc?export=view&id=18nuT-vJ7j48RG5aqMO3R1wwyn5ctqmrW)
+
+If we use the _transport input ssh_ command, the telnet access to the device is automatically disabled.
+
+> **NOTE**
+You should use the more recent version of the protocol, SSH version 2. This is done by using the _ip ssh version 2_ global configuration command.
+
 ---
 
 ## Port security
+
+By default, all interfaces on a Cisco switch are turned on. That means that an attacker could connect to your network through a wall socket and potentially threaten your network. If you know which devices will be connected to which ports, you can use the Cisco security feature called **port security**. By using port security, a network administrator can associate specific MAC addresses with the interface, which can prevent an attacker to connect his device. This way you can restrict access to an interface so that only the authorized devices can use it. If an unathorized device is connected, you can decide what action the switch will take, for example discarding the traffic and shutting down the port.
+
+To configure port security, three steps are required:
+
+1. define the interface as an access interface by using the _switchport mode access_ interface subcommand
+2. enable port security by using the _switchport port-security_ interface subcommand
+3. define which MAC addresses are allowed to send frames through this interface by using the *switchport port-security mac-address MAC_ADDRESS* interface subcommand or using the _swichport port-security mac-address sticky_ interface subcommand to dynamically learn the MAC address of the currently connected host
+
+Two steps are optional:
+
+1. define what action the switch will take when receiving a frame from an unathorized device by using the _port security violation (protect | restrict | shutdown)_ interface subcommand. All three options discards the traffic from the unauthorized device. The restrict and shutdown options send a log messsages when a violation occurs. Shut down mode also shuts down the port.
+2. define the maximum number of MAC addresses that can be used on the port by using the _switchport port-security maximum NUMBER_ interface submode command
+
+The following example shows the configuration of port security on a Cisco switch:
+
+![](https://drive.google.com/uc?export=view&id=1KNh9cQJSIfyoTeI0B1hiIsQlVY7t4bAw)
+
+First, we need to enable port security and define which MAC addresses are allowed to send frames:
+
+![](https://drive.google.com/uc?export=view&id=16GL6zDqXk1PIlZ7g4-DGCOA7l2jbSxIm)
+
+Next, by using the _show port-security interface fa0/1_ we can see that the switch has learned the MAC address of host A:
+
+![](https://drive.google.com/uc?export=view&id=1aTo7klLmXygZgchvvnLiTuyQC7CIN9KJ)
+
+By default, the maximum number of allowed MAC addresses are one, so if we connect another host to the same port, the security violation will occur:
+
+![](https://drive.google.com/uc?export=view&id=1vTZGEJSGBuFv2GWqJaKlNGNjvU5kHGn7)
+
+The status code of **err-disabled** means that the security violation occured on the port.
+
+> **NOTE**
+To enable the port, we need to use the _shutdown_ and _no shutdown_ interface subcommands.
 
 ---
 
 ## Types of memory on a Cisco device
 
+Cisco devices usually have four types of memory that are being used for different purposes. These four types are:
+
+- **ROM (Read-only memory)** – stores a bootstrap program that is used to initialize a boot process. This is a read-only type of memory, so it can’t be altered.
+- **RAM (Random Access Memory)** – the running configuration and routing tables of the device are stored here. This type of memory loses its content when a device is restarted.
+- **Flash memory** – used to store IOS software images. Can also be used to store other files, for example backup configuration files.  Retains its content even after a device is restarted.
+- **NVRAM (Nonvolatile RAM)** – usually used to store a startup configuration file. This type of memory retains its content even after a device is powered down or restarted.
+
 ---
 
 ## Configure Cisco router as DHCP server
+
+**Dynamic Host Configuration Protocol (DHCP)** is an application layer protocol used to distribute various network configuration parameters to devices on a TCP/IP network. – IP addresses, subnet masks, default gateways, DNS servers, etc. DHCP employs a client-server architecture; a DHCP client is configured to request network parameters from a DHCP server on the network. A DHCP server is configured with a pool of available IP addresses and assigns one of them to the DHCP client.
+
+A Cisco router can be configured as a DHCP server. Here are the steps:
+
+1. Exclude IP addresses from being assigned by DHCP by using the *ip dhcp excluded-address FIRST_IP LAST_IP*
+2. Create a new DHCP pool with the _ip dhcp pool NAME_ command.
+3. Define a subnet that will be used to assign IP addresses to hosts with the network *SUBNET SUBNET_MASK* command.
+4. Define the default gateway with the _default-router IP_ command.
+5. Define the DNS server with the _dns-server IP address_ command.
+6. (Optional) Define the DNS domain name by using the _ip domain-name NAME_ command.
+7. (Optional) Define the lease duration by using the _lease DAYS HOURS MINUTES_ command. If you don’t specify this argument, the default lease time of 24 hours will be used.
+
+Here is an example configuration:
+
+```json
+Floor1(config)#ip dhcp excluded-address 192.168.0.1 192.168.0.50
+Floor1(config)#ip dhcp pool Floor1DHCP
+Floor1(dhcp-config)#network 192.168.0.0 255.255.255.0
+Floor1(dhcp-config)#default-router 192.168.0.1
+Floor1(dhcp-config)#dns-server 192.168.0.1
+```
+
+In the example above you can see that I’ve configured the DHCP server with the following parameters:
+
+- the IP addresses from the **192.168.0.1 – 192.168.0.50*** range will not be assigned to hosts
+- the DHCP pool was created and named **Floor1DHCP**
+- the IP addresses assigned to the hosts will be from the **192.168.0.0/24** range
+- the default gateway’s IP address is **192.168.0.1**
+- the DNS server’s IP address is **192.168.0.1**
+
+To view information about the currently leased addresses, you can use the _show ip dhcp binding_ command:
+
+```json
+Floor1#show ip dhcp binding
+IP address Client-ID/ Lease expiration Type
+Hardware address
+192.168.0.51 0060.5C2B.3DCC -- Automatic
+```
+
+In the output above you can see that there is a single DHCP client that was assigned the IP address of **192.168.0.51**. Since we’ve excluded the IP addresses from the **192.168.0.1 – 192.168.0.50** range, the device got the first address available – **192.168.0.51**.
+
+To display information about the configured DHCP pools, you can use the _show ip dhcp pool_ command:
+
+```json
+Floor1#show ip dhcp pool
+Pool Floor1DHCP :
+Utilization mark (high/low) : 100 / 0
+Subnet size (first/next) : 0 / 0
+Total addresses : 254
+Leased addresses : 1
+Excluded addresses : 1
+Pending event : none
+
+1 subnet is currently in the pool
+Current index IP address range Leased/Excluded/Total
+192.168.0.1 192.168.0.1 - 192.168.0.254 1 / 1 / 254
+```
+
+This command displays some important information about the DHCP pool(s) configured on the device – the pool name, total number of IP addresses, the number of leased and excluded addresses, subnet’s IP range, etc.
 
 ---
 
 ## Configure NTP on a Cisco router
 
+**NTP (Network Time Protocol)** is an application layer protocol used for time synchronization between hosts on a TCP/IP network. The goal of NTP is to ensure that all devices on a network agree on the time, since even a small difference can cause problems. NTP uses a client-server architecture; usually with one host being configured as the NTP server, and other hosts on the network are configured as NTP clients.
+
+Cisco routers can be configured as both NTP clients and NTP servers. To configure a Cisco router as an NTP client, we can use the *ntp server IP_ADDRESS* command:
+
+```json
+Floor1(config)#ntp server 192.168.0.100
+```
+
+> **NOTE**
+To define a version of NTP, add the version _NUMBER_ keywords at the end of the command (e.g. _ntp server 192.168.0.100 version 3_).
+
+To verify NTP status, use the _show ntp status_ command:
+
+```json
+Floor1#show ntp status
+Clock is synchronized, stratum 2, reference is 192.168.0.100
+nominal freq is 250.0000 Hz, actual freq is 249.9990 Hz, precision is 2**19
+reference time is DE4AB2B7.0000037A (18:49:27.890 UTC Thu Apr 5 2018)
+clock offset is 0.00 msec, root delay is 0.00 msec
+root dispersion is 0.02 msec, peer dispersion is 0.02 msec.
+```
+
+To configure your Cisco router as an NTP server, only a single command is needed:
+
+```json
+DEVICE(config)#ntp master
+```
+
+After entering this command you will need to point all the devices in your LAN to use the router as NTP server.
+
 ---
 
 ## Cisco Discovery Protocol (CDP) overview
+
+**CDP (Cisco Discovery Protocol)** is a proprietary protocol developed by Cisco used to discovers information about the locally attached Cisco equipment. With CDP, the administrator can gather hardware and protocol information about neighboring devices, which can be helpful when troubleshooting or documenting the network.
+
+To discover information, Cisco devices send CDP messages out each of their interfaces. These messages contain information about them, such as their hostname, network and data link addresses, the device model, IOS version, etc.
+ 
+To display information about directly connected devices, we use the _show cdp neighbor_ command:
+
+```json
+Floor1#show cdp neighbors
+Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge
+S - Switch, H - Host, I - IGMP, r - Repeater, P - Phone
+Device ID Local Intrfce Holdtme Capability Platform Port ID
+Switch Gig 0/0 166 S 2960 Fas 0/1
+```
+
+As you can see from the example above, there is one directly connected device. Here is a description of each field:
+
+- **Device ID** – the hostname of the directly connected device. In this case the hostname is **Switch**.
+- **Local Interface** – the local interface on which the CDP messages were received (**Gi0/0** in this case).
+- **Holdtime** – the amount of time the local device will hold the information before discarding it if no more CDP packets are received.
+- **Capability** – the capability of the directly connected device. The letter **S** indicates that the directly connected device is a switch. The letter **R** would indicate a router.
+- **Platform** – the model and OS level running on the neighbor, **2960 series switch** in this case.
+- **Port ID** – the neighbor device’s interface on which the CDP packets were sent, in this case **Fa0/1**.
+
+To get even more information about the neighbors, use the _show cdp neighbors detail_ command:
+
+```json
+Floor1#show cdp neighbors detail
+
+Device ID: Switch
+Entry address(es):
+Platform: cisco 2960, Capabilities: Switch
+Interface: GigabitEthernet0/0, Port ID (outgoing port): FastEthernet0/1
+Holdtime: 126
+
+Version :
+Cisco IOS Software, C2960 Software (C2960-LANBASE-M), Version 12.2(25)FX, RELEASE SOFTWARE (fc1)
+Copyright (c) 1986-2005 by Cisco Systems, Inc.
+Compiled Wed 12-Oct-05 22:05 by pt_team
+
+advertisement version: 2
+Duplex: full
+```
+
+> **NOTE**
+IEEE has released a vendor-neutral **link layer protocol called Link Layer Discovery Protocol (LLDP)** as an alternative to CDP.
 
 ---
 
 ## Map hostnames to IP addresses
 
+It is possible to define static hostname-to-address mappings on a Cisco device for the purpose of name resolution. This is usually done in environments without a DNS server.
+
+The mappings can be defined using the global configuration command *ip host HOSTNAME IP_ADDRESS*:
+
+```json
+Floor1(config)#ip host HQ_SERVER 192.168.0.100
+```
+
+In the output above we’ve defined the IP address of **192.168.0.100** for the hostname **HQ_SERVER**. To display the hostname-to-address mappings, the _show hosts_ command is used:
+
+```json
+Floor1#show hosts
+Default Domain is not set
+Name/address lookup uses domain service
+Name servers are 255.255.255.255
+
+Codes: UN - unknown, EX - expired, OK - OK, ?? - revalidate
+temp - temporary, perm - permanent
+NA - Not Applicable None - Not defined
+
+Host Port Flags Age Type Address(es)
+HQ_SERVER None (perm, OK) 0 IP 192.168.0.100
+```
+
+We can ping the server using its hostname to verify that the hostnames are being resolved:
+
+```json
+Floor1#ping HQ_SERVER
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.0.100, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 0/0/1 ms
+```
+
+You can see that **HQ_SERVER** responded to the ping request, which means that the name resolution was successful.
+
+> **NOTE**
+The drawback of this method of name resolution is that we need to create static hostname-to-address mappings on each device in order to be able to resolve hostnames. If possible, use DNS instead.
+
 ---
 
 ## Configure Cisco device as DNS client
+
+**DNS** is an  application layer protocol used to resolve hostnames to IP addresses. If you have a DNS server on your network, you can configure your Cisco device to use it for name resolution. Here are the steps:
+
+1. (Optional) If you’ve previously disabled DNS lookups on your device, re-enable it with the _ip domain-lookup_ command.
+2. Specify the IP address of the DNS server using the _ip name-server_ command. It is possible to specify up to six DNS servers.
+3. (Optional) Specify the domain name to append to the hostname you type in by using the _ip domain-name_ command.
+
+Here is an example configuration:
+
+```json
+Floor1(config)#ip name-server 192.168.0.100
+```
+
+In the output above you can see that I’ve specified the IP address of my DNS server (192.168.0.100). Let’s say that the DNS server contains a record for a server called **fileshare**. I can try to ping that host using its hostname to verify that the name resolution process is indeed working:
+
+```json
+Floor1#ping fileshare
+Translating "fileshare"...domain server (192.168.0.100)
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.0.110, timeout is 2 seconds:
+.!!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 0/0/1 ms
+```
+
+As you can see from the output above, the hostname **fileshare** was translated to the IP address of 192.168.0.110.
 
 ---
 
 ## Extended ping command
 
+The _ping_ command in Cisco IOS (and other operating systems) is used to test the accessibility of devices on a TCP/IP network. Cisco devices also support the _extended ping_command that allows you to perform a more advanced check of the host reachability and network connectivity. With this command, you can define the source IP address as any IP address on the router, number and size of ping packets, different timeout interval, etc.
+
+The _extended ping_command command is invoked from the privileged exec mode by typing _ping_ and pressing Enter. The following arguments can be modified:
+
+- **Protocol [ip]** – specify the protocol, such as appletalk, clns, ip, novell, apollo, vines, decnet, or xns. The default is ip.
+- **Target IP address** – specify the IP address or the hostname of the host to ping.
+- **Repeat count** – specify the number of ping packets that will be sent to the destination address. 5 by default.
+- **Datagram size** – specify the size of the ping packet (in bytes). The default is 100 bytes.
+- **Timeout in seconds** – specify the timeout interval. The default is 2 seconds. The echo reply needs to be received before the timeout expires in order for ping to be successful.
+- **Extended commands** – specify whether or not a series of additional commands will appear. The default is no. If you type yes additional arguments will be shown.
+- **Source address or interface** – specify the interface or the IP address of the router to use as the source address for the ping packets.
+- **Type of service** – specifies the Type of Service (ToS). This is the Internet service’s quality selection. The default is 0.
+- **Set DF bit in IP header?** – specify whether or not the Don’t Fragment (DF) bit will be set on the ping packet. If yes is entered, the Don’t Fragment option does not allow the packet to be fragmented. The default is no.
+- **Validate reply data?** – specify whether or not to validate the reply data. The default is no.
+- **Data pattern** – specify the data pattern. Data patterns are used to troubleshoot framing errors and clocking problems on serial lines. The default is [0xABCD].
+Loose, Strict, Record, Timestamp, Verbose – specify the IP header options.
+- **Sweep range of sizes** – specify the sizes of the ping echo packets that are sent. This parameter is used to determine the minimum sizes of the MTUs configured on the nodes along the path to the destination address. The default is no.
+
+The extended ping command is most often used to change the source IP address of the ping echo packets. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1bb0yJKhbOEXG_ionS4BLsjszUi57b8J7)
+
+By default, routers choose the IP address of the outgoing interface as the source IP address for ping echo packets. This means that R2 will use the IP address of the Fa0/1 interface (10.0.0.1) as the source IP address for the ping packets sent to 10.0.0.2 (R1). Let’s try to ping R1 using the standard ping command:
+
+```json
+R2#ping 10.0.0.2
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.0.0.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 0/0/1 ms
+```
+
+As you can see from the output, the ICMP replies were received. However, I can run the _extended ping_ command to change the source IP address to the IP address of the R2 Fa0/0 interface (192.168.5.1). This is done to ensure that R1 knows about the 192.168.5.1 network (in other words, that it knows where to send packets destined for the 192.168.5.0/24 network, which could indicate routing problems).
+
+```json
+R2#ping
+Protocol [ip]:
+Target IP address: 10.0.0.2
+Repeat count [5]:
+Datagram size [100]:
+Timeout in seconds [2]:
+Extended commands [n]: yes
+Source address or interface: 192.168.5.1
+Type of service [0]:
+Set DF bit in IP header? [no]:
+Validate reply data? [no]:
+Data pattern [0xABCD]:
+Loose, Strict, Record, Timestamp, Verbose[none]:
+Sweep range of sizes [n]:
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.0.0.2, timeout is 2 seconds:
+Packet sent with a source address of 192.168.5.1
+.....
+Success rate is 0 percent (0/5)
+```
+
+In the output above you can see that no echo replies were received after I’ve changed the source IP of the ping packets. This means that R1 doesn’t know how to reach the 192.168.5.0/24 network.
+
 ---
 
 ## traceroute command
+
+The _traceroute_ command on a Cisco device can be used to identify the path used by a packet to reach its target. It identifies all the routers in the path from the source host to destination host and it can be useful when troubleshooting network problems. Using this command you can figure out which router in the path to an unreachable target should be examined more closely as the probable cause of the network’s failure.
+
+Consider the following example network:
+
+![](https://drive.google.com/uc?export=view&id=1yRcw_PydMklxJ1uhHtrz1tMdpMHS0LZo)
+
+In the picture above you can see that we have a network of four routers. The network is working correctly. Consider what happens when we issue the _traceroute_ command on R1 to the IP address of the router’s R4 Gi0/0 interface (172.16.0.2):
+
+```json
+R1#traceroute 172.16.0.2
+Type escape sequence to abort.
+Tracing the route to 172.16.0.2
+1 10.0.0.1 0 msec 0 msec 0 msec
+2 192.168.5.2 0 msec 0 msec 0 msec
+3 172.16.0.2 0 msec 0 msec 0 msec
+```
+
+You can see that the traceroute command has listed the IP addresses of all of the routers in the path to the destination. Now let’s assume that the router R3 goes down. Consider the command output now:
+
+```json
+R1#traceroute 172.16.0.2
+Type escape sequence to abort.
+Tracing the route to 172.16.0.2
+1 10.0.0.1 0 msec 0 msec 0 msec
+2 10.0.0.1 !H * !H
+3 * *
+```
+
+Notice how there is no response from R3 (192.168.5.2). Using this information, we can assume that there is a problem with R3 and investigate the matter. The _!H_ in the output indicates that the host is unreachable. Other character that can appear in the _traceroute_ command output are:
+
+- number of miliseconds – the round-trip time in milliseconds.
+- * – the probe has timed out.
+- A – administratively prohibited (for example, with an access-list).
+- Q – source quench (the destination is too busy).
+- I – user interrupted test.
+- U – port is unreachable.
+- N – the network is unreachable.
+- P – the protocol is unreachable.
+- T – timeout.
+- ? – unknown packet type.
 
 ---
 
 ## debug command
 
+The _debug_ command displays information about the Cisco device operations, generated or received traffic, and any error messages. The information are provided in real-time until the user disables debugging or the device is restarted.
+The debug operation takes a lot of CPU resources and should not be used often in production environments. It is meant to be used as a troubleshooting tool for only a short period of time. You can choose to debug only specific events – for example, EIGRP information, received ICMP messages, etc.
+
+Consider the following example:
+
+```json
+R1#debug ip icmp
+ICMP packet debugging is on
+R1#
+R1#
+ICMP: echo reply sent, src 10.0.0.2, dst 10.0.0.1
+
+ICMP: echo reply sent, src 10.0.0.2, dst 10.0.0.1
+```
+
+In the example above you can see that I’ve enabled debugging only for the ICMP events (such as pings). In the output you can see that R1 has responded to the device with the IP address of 10.0.0.1 with two ping reply packets.
+
+To disable debugging of the ICMP events, simply re-enter the command with the no keyword in front of it:
+
+```json
+R1#no debug ip icmp
+ICMP packet debugging is off
+```
+
+To debug only RIP messages, we would run the following command:
+
+```json
+R1#debug ip rip
+RIP protocol debugging is on
+R1#
+R1#RIP: received v2 update from 10.0.0.1 on GigabitEthernet0/0
+172.16.0.0/16 via 0.0.0.0 in 2 hops
+192.168.5.0/24 via 0.0.0.0 in 1 hops
+RIP: received v2 update from 10.0.0.1 on GigabitEthernet0/0
+172.16.0.0/16 via 0.0.0.0 in 16 hops
+192.168.5.0/24 via 0.0.0.0 in 16 hops
+```
+
+You can enable debugging of everything happening on your device by issuing the _debug all_ command (do not use this command on production devices, since it can produce a lot of output and crash the device!):
+
+![](https://drive.google.com/uc?export=view&id=1N_HJyahu9NL5ryaUv6ZJzfdXZMyYuTax)
+
+To disable this command, type the _undebug all_ command (or the _un all_ shortcut).
+
 ---
 
 ## show processes command
+
+If a Cisco device is suffering from high CPU usage, we can use the _show processes_ command to list all running processes and determine the cause of problem. This command gives you a list of active processes, along with their corresponding process ID, priority, CPU time used, number of times invoked, and other information.
+
+Here is an example output of this command invoked on a Cisco router:
+
+```json
+R1#show processes
+CPU utilization for five seconds: 0%/0%; one minute: 0%; five minutes: 0%
+PID QTy PC Runtime (ms) Invoked uSecs Stacks TTY Process
+1 Csp 602F3AF0 0 1627 0 2600/3000 0 Load Meter
+2 Lwe 60C5BE00 4 136 29 5572/6000 0 CEF Scanner
+3 Lst 602D90F8 1676 837 2002 5740/6000 0 Check heaps
+4 Cwe 602D08F8 0 1 0 5568/6000 0 Chunk Manager
+5 Cwe 602DF0E8 0 1 0 5592/6000 0 Pool Manager
+6 Mst 60251E38 0 2 0 5560/6000 0 Timers
+7 Mwe 600D4940 0 2 0 5568/6000 0 Serial Backgrou
+8 Mwe 6034B718 0 1 0 2584/3000 0 OIR Handler
+9 Mwe 603FA3C8 0 1 0 5612/6000 0 IPC Zone Manage
+10 Mwe 603FA1A0 0 8124 0 5488/6000 0 IPC Periodic Ti
+11 Mwe 603FA220 0 9 0 4884/6000 0 IPC Seat Manage
+12 Lwe 60406818 124 2003 61 5300/6000 0 ARP Input
+13 Mwe 60581638 0 1 0 5760/6000 0 HC Counter Time
+```
+
+The first line of the output shows the CPU utilization for the last 5 seconds, 1 minute, and 5 minutes. Here is a description of other fields in the output:
+
+- **PID** – the Process ID.
+- **Q** – the process queue priority. Possible values are: C (critical), H (high), M (medium), and L (low).
+- **Ty** – scheduler test (status). Possible values are: * (currently running), E (waiting for an event), S (ready to run, voluntarily relinquished processor), rd (ready to run, wakeup conditions have occurred), we (waiting for an event), sa (sleeping until an absolute time), si (sleeping for a time interval), sp (sleeping for a time interval (alternate call), st(sleeping until a timer expires), hg (hung; the process will never execute again), xx (dead: the process has terminated, but has not yet been deleted).
+- **PC** – current program counter.
+- **Runtime** – CPU time the process has used.
+- **Invoked** – number of times the process has been invoked.
+- **microSecs** – CPU time for each process invocation.
+Stacks – low water mark or Total stack space available, shown in bytes.
+- **TTY** – terminal that controls the process.
+- **Process** – the name of the process.
 
 ---
 
 ## Configure an IP address on a switch
 
+By default, Cisco switches forward Ethernet frames without any configuration. This means that you can buy a Cisco switch, plug in the right cables to connect various devices to the switch, power it on, and the switch will work properly.
+
+However, to perform switch management over the network or use protocols such as SNMP, the switch will need to have an IP address. The IP address is configured under a logical interface, known as the management domain or VLAN. Usually, the default VLAN 1 acts like the switch’s own NIC for connecting into a LAN to send IP packets. Here are the steps to configure an IP address under VLAN 1:
+
+1. enter the VLAN 1 configuration mode with the _interface vlan 1_ global configuration command.
+2. assign an IP address with the *ip address IP_ADDRESS SUBNET_MASK* interface subcommand.
+3. enable the VLAN 1 interface with the _no shutdown_ interface subcommand.
+4. (Optional) use the *ip default-gateway IP_ADDRESS* global configuration command to configure the default gateway.
+5. (Optional) Add the *ip name-server IP_ADDRESS* global configuration command to configure the DNS server.
+
+Here is a simple example network:
+
+![](https://drive.google.com/uc?export=view&id=19FazaXg8NSqncWI4O4HxBq6yAtTjvzkE)
+
+We have a simple network of a host and a switch. We can assign the switch with an IP address to enable IP communication between the two devices:
+
+```json
+SW1(config)#int vlan 1
+SW1(config-if)#
+SW1(config-if)#
+SW1(config-if)#ip address 10.0.0.2 255.0.0.0
+SW1(config-if)#no shutdown
+
+SW1(config-if)#
+%LINK-5-CHANGED: Interface Vlan1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Vlan1, changed state to up
+```
+
+To verify the IP address set on a switch, we can use the show int vlan 1 command:
+
+```json
+SW1#show int vlan 1
+Vlan1 is up, line protocol is up
+Hardware is CPU Interface, address is 0030.a3e8.6b3c (bia 0030.a3e8.6b3c)
+Internet address is 10.0.0.2/8
+....
+```
+
+We can verify that the host can reach the switch using its IP address by pinging it from Host A:
+
+```json
+C:\>ping 10.0.0.2
+
+Pinging 10.0.0.2 with 32 bytes of data:
+
+Reply from 10.0.0.2: bytes=32 time<1ms TTL=255
+Reply from 10.0.0.2: bytes=32 time<1ms TTL=255
+...
+```
+
 ---
 
 ## Configure interVLAN routing
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+Each VLAN is its own subnet and broadcast domain, which means that frames broadcasted onto the network are switched only between the ports within the same VLAN. For interVLAN communication, an OSI layer 3 device (usually a router) is needed. This layer 3 device needs to have an IP address in each VLAN and have a connected route to each of those subnets. The hosts in each subnet can then be configured to use the router’s IP addresses as their default gateway.
+
+Three options are available for routing between VLANs:
+
+1. Use a router, with one router LAN interface connected to the switch for each VLAN. Since you need one Ethernet interface on your router to connect to each VLAN, this option is not really scalable and rarely used today.
+
+![](https://drive.google.com/uc?export=view&id=1RGx_xi7X2LIPV766qyRwVZYXVzlDj5EY)
+
+2. Use one router interface with trunking enabled. This option is called **router on a stick (ROAS)** and enables all VLANs to communicate over a single interface.
+
+![](https://drive.google.com/uc?export=view&id=1bONkogvLmudRJXCaRmQvca9KUQu58eFn)
+
+3. Use a Layer 3 switch, which is a device that performs both the switching and routing operations.
 
 ---
 
 ## Configure ROAS
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+To allow interVLAN communication, you can divide a single physical interface on a router into logical interfaces that will be configured as trunk interfaces. This method of interVLAN communication is called **router on a stick (ROAS)** and enables all VLANs to communicate through a single physical interface. The physical interface is divided into logical interfaces (known as subinterfaces), one for each VLAN.
+
+A subinterface is created with the *interface TYPE NUMBER.SUBINTERFACE* command. The subinterface number begins with the period and it is usually the same as the VLAN the subinterface will be in. For example, the command interface *Gi0/0.1* creates a subinterface .1 under the physical *Gi0/0* port.
+
+To configure trunking on a router, the following commands are used:
+
+1. *(config)# interface TYPE NUMBER.SUBINTERFACE* – creates the subinterface and enters the subinterface command mode.
+2. *(config-subif)# encapsulation dot1q VLAN_ID* – sets the subinterface to trunk and associates it with a specific VLAN.
+3. *(config-subif)# ip address IP_ADDRESS SUBNET_MASK* – sets the IP address for the subinterface.
+
+We will use the following network in our example:
+
+![](https://drive.google.com/uc?export=view&id=1RmHzX31KEklaKAVZNCQaENjovTuL3i-0)
+
+We have a network of three hosts, a switch and a router. Each host is in a different VLAN, so we need to divide the physical router’s interface Gi0/0 into logical interfaces, one for each VLAN. But first, here is the configuration of the switch:
+
+```json
+SW1(config)#int fa0/3
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 3
+% Access VLAN does not exist. Creating vlan 3
+SW1(config-if)#int fa0/4
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 10
+% Access VLAN does not exist. Creating vlan 10
+SW1(config-if)#int fa0/2
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 5
+% Access VLAN does not exist. Creating vlan 5
+SW1(config-if)#int fa0/1
+SW1(config-if)#switchport mode trunk
+```
+
+Notice how we’ve configured the Fa0/1 port on a switch (the port connected to the router’s Gi0/0 interface) as the trunk port. Other ports were configured as access ports and placed into respective VLANs since they are connected to end devices. Now, let’s configure the router:
+
+```json
+R1(config)#int Gi0/0
+R1(config-if)#no shutdown
+
+R1(config-if)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+R1(config-if)#int Gi0/0.1
+R1(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.1, changed state to up
+
+R1(config-subif)#encapsulation dot1q 3
+R1(config-subif)#ip address 10.0.3.1 255.255.255.0
+R1(config-subif)#int Gi0/0.2
+R1(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.2, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.2, changed state to up
+
+R1(config-subif)#encapsulation dot1q 10
+R1(config-subif)#ip address 10.0.10.1 255.255.255.0
+R1(config-subif)#int Gi0/0.3
+R1(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.3, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.3, changed state to up
+
+R1(config-subif)#encapsulation dot1q 5
+R1(config-subif)#ip address 10.0.5.1 255.255.255.0
+```
+
+In the output above you can see that the router’s physical interface Gi0/0 was divided into three subinterfaces that were then configured as trunk interfaces and assigned the IP addresses.
+
+To test whether the intervlan communication works, we can try to ping Host C from Host A:
+
+```json
+C:\>ping 10.0.5.10
+
+Pinging 10.0.5.10 with 32 bytes of data:
+
+Reply from 10.0.5.10: bytes=32 time<1ms TTL=127
+Reply from 10.0.5.10: bytes=32 time=1ms TTL=127
+Reply from 10.0.5.10: bytes=32 time<1ms TTL=127
+Reply from 10.0.5.10: bytes=32 time<1ms TTL=127
+```
+
+As you can see from the output above, the response was received, which means that the hosts can communicate even though they are in different VLANs.
+
 ---
 
 ## Configure static MAC address
+
+Although Cisco switches dynamically build the MAC address table by using the source MAC address of the received frames, you can also manually add a MAC address to the switch’s MAC address table. The static MAC entries will be retained even after the switch is restarted.
+
+To configure a static MAC address, the following command is used:
+
+```json
+(config)#mac-address-table static MAC_ADDRESS vlan ID interface INTERFACE
+```
+
+The following command will permanently assign the MAC address of **1111.1111.1111** to the interface Fa0/2, VLAN 1:
+
+```json
+SW1(config)#mac-address-table static 1111.1111.1111 vlan 1 interface fa0/2
+```
+
+To verify the configuration, we can use the _show mac address table_ command:
+
+```json
+SW1(config)#do show mac-address-table
+Mac Address Table
+-------------------------------------------
+
+Vlan Mac Address Type Ports
+---- ----------- -------- -----
+
+1 1111.1111.1111 STATIC Fa0/2
+```
+
+> **NOTE**
+To delete the static entry from the MAC address table, re-enter the command with the _no_ keyword in front.
 
 ---
 
 ## Link Layer Discovery Protocol (LLDP)
 
+**Link Layer Discovery Protocol (LLDP)** is a vendor-neutral link layer protocol defined in IEEE standard **802.1AB**. Just like Cisco’s CDP, LLDP is used by network devices to advertise their identity, capabilities, and neighbors on a local Ethernet network. However, since LLDP is an open standard, it has one big advantage over CDP – it can be used on non-Cisco devices.
+
+LLDP is disabled by default on Cisco devices. To enable it, use the lldp run command in the config mode:
+
+```json
+R1(config)#lldp run
+```
+
+To display information about the LLDP neighbors, run the _show lldp neighbors_ command:
+
+```json
+R1#show lldp neighbors
+Capability codes:
+    (R) Router, (B) Bridge, (T) Telephone, (C) DOCSIS Cable Device
+    (W) WLAN Access Point, (P) Repeater, (S) Station, (O) Other
+Device ID           Local Intf     Hold-time  Capability      Port ID
+R2                  Gig0/0         120        R               Gig0/0
+
+Total entries displayed: 1
+```
+
+As you can see from the output above, R1 has a single neighbor. Here is the description of the fields in the output:
+
+- **Device ID** – the neighbor’s host name
+- **Local Intf** – the local device interface on which the neighbor is connected to
+- **Hold-time** – the time the receiving device should hold the information sent by this device before discarding it.
+- **Capability** – the type of the device. R means router, T means telephone, etc.
+- **Port ID** – neighboring device’s interface
+
+To get more detail information about LLDP neighbors, run the _show lldp neighbors detail_ command:
+
+```json
+R1#show lldp neighbors detail 
+------------------------------------------------
+Chassis id: 0002.4A13.6C01
+Port id: Gig0/0
+Port Description: GigabitEthernet0/0
+System Name: R2
+System Description:
+Cisco IOS Software, C1900 Software (C1900-UNIVERSALK9-M), Version 15.1(4)M4, RELEASE SOFTWARE (fc2)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2012 by Cisco Systems, Inc.
+Compiled Thurs 5-Jan-12 15:41 by pt_team
+Time remaining: 90 seconds
+System Capabilities: R
+Enabled Capabilities: R
+Management Addresses - not advertised
+Auto Negotiation - supported, enabled
+Physical media capabilities:
+1000baseT(FD)
+100baseT(FD)
+Media Attachment Unit type: 10
+Vlan ID: 1
+
+Total entries displayed: 1
+```
+
+> **NOTE**
+To get information about a specific neighbor, run the *show lldp entry DEVICE_ID* command.
+
+To display global LLDP information, run the show lldp command:
+
+```json
+R2#show lldp
+Global LLDP Information:
+Status: ACTIVE
+LLDP advertisements are sent every 30 seconds
+LLDP hold time advertised is 120 seconds
+LLDP interface reinitialisation delay is 2 seconds
+```
+
+This command displays information about whether LLDP is active on the device, the frequency of LLDP transmissions, the holdtime for packets being sent, and the delay time for LLDP to initialize on an interface.
+
+You can also configure whether you would like your device to send or receive LLDP packets on a particular interface using the _no lldp transmit_ and _no lldp receive_ interface mode commands. For example, to only receive LLDP packets on the Gi0/0 interface, I would use the following command to disable the sending of LLDP packets:
+
+```json
+R1(config-if)#no lldp transmit
+```
+
 ---
 
 ## IOS files
+
+Cisco devices usually use integrated flash memory to store IOS software images and other files (e.g. backup configuration files). The startup configuration is stored in NVRAM. For each memory device available on the device, a file system called IOS file system (IFS) is created. To list file systems available on your device, the _show file systems EXEC mode _command is used:
+
+```json
+R1#show file systems
+File Systems:
+
+       Size(b)       Free(b)      Type  Flags  Prefixes
+*    255744000     221896413      disk     rw  flash0: flash:#
+        262136        255005     nvram     rw  nvram:
+```
+
+In the command above you can see that I have two file systems available on my device. Here is a description of each field:
+
+- **Size(b)** – total memory in the file system (in bytes)
+- **Free(b)** – free memory in the file system (in bytes)
+- **Type** – type of the file system. disk represents the flash memory, and nvram represents the NVRAM memory
+- **Flags** – filesystem permissions. rw means that the file system is read/write.
+- **Prefixes** – file system aliases.
+
+The IOS image is a single file that is loaded into RAM when the device boots. This file is usually stored in the flash memory, since this type of memory will retain the stored files even after the router is powered off or rebooted. To show the contents of the flash memory, the _show flash:_ command is used:
+
+```json
+R2#show flash:
+
+System flash directory:
+File  Length   Name/status
+  3   33591768 c1900-universalk9-mz.SPA.151-4.M4.bin
+  2   28282    sigdef-category.xml
+  1   227537   sigdef-default.xml
+[33847587 bytes used, 221896413 available, 255744000 total]
+249856K bytes of processor board System flash (Read/Write)
+```
+
+The file **c1900-universalk9-mz.SPA.151-4.M4.bin** is an IOS image for the 1900 Integrated Services Router series. The other two XML files are used for encryption purposes.
 
 ---
 
 ## Configure speed and duplex
 
+By default, Cisco switches will auto-negotiate the speed and duplex settings. When you connect a device (either a switch, router, or a workstation) to a port on a Cisco switch, the negotiation process will occur and the devices will agree on the transmission parameters. Most of the today’s network adapters support this function.
+
+Consider the following example network:
+
+![](https://drive.google.com/uc?export=view&id=1UlP-ZrG5UZr5K09ScpWVrovNxyFvHxBg)
+
+In the picture above you see a network of a hub, a switch, and a workstation. All three devices have auto-negotiation turned on. Because hubs can only operate in half duplex, the switch and hub will negotiate to use the speed of 100 Mbps and half-duplex. The workstation on the right is capable of 100 Mbps and supports full duplex, so the devices will use these parameters to communicate.
+
+We can verify the speed and duplex settings using the _show interface_ command on SW1:
+
+```json
+SW1#show interface Fa0/1
+FastEthernet0/1 is up, line protocol is up (connected)
+Hardware is Lance, address is 0009.7c66.6401 (bia 0009.7c66.6401)
+...
+Half-duplex, 100Mb/s
+...
+SW1#show int fa0/2
+FastEthernet0/2 is up, line protocol is up (connected)
+Hardware is Lance, address is 0009.7c66.6402 (bia 0009.7c66.6402)
+...
+Full-duplex, 100Mb/s
+...
+```
+
+As you can see from the output above, the interface _Fa0/1_ will use the speed of 100 Mbps and half-duplex. The _Fa0/2_ interface will use the same speed, but it will use the full duplex communication.
+
+It is recommended that devices on both sides of a link should have the auto-negotiation setting turned on, or both sides should have it off. If you encounter a device that has speed and duplex parameters manually configured, you can use the interface mode speed and duplex commands to set the duplex and speed settings, e.g.:
+
+```json
+SW1(config)#int Fa0/3
+SW1(config-if)#speed 100
+SW1(config-if)#duplex full
+```
+
+When one device uses autonegotiation and the other one has disabled it, the device using autonegotiation will choose the default duplex setting based on the current speed. The defaults are:
+
+- If the speed is not known, 10 Mbps and half duplex settings will be used.
+
+And If the device successfully senses the speed without IEEE autonegotiation, by just looking at the signal on the cable.
+
+- If the speed is 10 or 100 Mbps, use half duplex.
+- If the speed is 1,000 Mbps or faster, use full duplex.
+
 ---
 
 ## Interface range command
+
+If you have multiple interfaces that need to be configured with the same settings, you can use the _interface range_ command to specify a range of interfaces to which the subsequent commands will be applied.
+
+For example, let’s say that interfaces Fa0/4, Fa0/5, Fa0/6, Fa0/7, and Fa0/8 need to have the same description. We don’t need to enter the subinterface mode of each interface separately to configure the description – we can use the _interface range Fa0/4 – 8_ command and then execute the _description_ command:
+
+```json
+SW1(config)#interface range Fa0/4 - 8
+SW1(config-if-range)#description END_HOSTS
+```
+
+The description parameter will be applied to all interfaces in the specified range:
+
+```json
+SW1#show running-config
+Building configuration...
+...
+Current configuration : 1157 bytes
+interface FastEthernet0/3
+!
+interface FastEthernet0/4
+description END_HOSTS
+!
+interface FastEthernet0/5
+description END_HOSTS
+!
+interface FastEthernet0/6
+description END_HOSTS
+!
+interface FastEthernet0/7
+description END_HOSTS
+!
+interface FastEthernet0/8
+description END_HOSTS
+!
+interface FastEthernet0/9
+!
+....
+```
 
 ---
 
 ## How to upgrade Cisco IOS
 
+Before upgrading IOS, you need to obtain the latest IOS version. This is usually done by logging in at https://software.cisco.com/ and selecting your device type and version. The downloaded file must then be transferred to a flash drive of the device, usually via TFTP or FTP.
+
+Let’s upgrade Cisco Catalyst 2960 to a newer version of IOS via TFTP. Here are the steps:
+
+1. We need to place the image file to a TFTP server that is reachable by the switch:
+
+![](https://drive.google.com/uc?export=view&id=18cUQPflyvvnLVP9TAzbw0H86Nb54yHtx)
+
+2. Next, we need to transfer the file from the TFTP server to the flash memory of the switch. This can be done by issuing the copy command on the switch:
+
+```json
+SW1#copy tftp flash
+Address or name of remote host []? 10.0.0.100
+Source filename []? c2960-lanbasek9-mz.150-2.SE4.bin
+Destination filename [c2960-lanbasek9-mz.150-2.SE4.bin]? 
+
+Accessing tftp://10.0.0.100/c2960-lanbasek9-mz.150-2.SE4.bin....
+Loading c2960-lanbasek9-mz.150-2.SE4.bin from 10.0.0.100: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+[OK - 4670455 bytes]
+
+4670455 bytes copied in 3.079 secs (121951 bytes/sec)
+SW1#
+```
+
+Notice how we need to enter the IP address and the exact filename of the image we wanted to copy. We’ve also specified that the destination filename will be the same as the source filename.
+
+By issuing the _show flash:_ command, we can see that the file was copied to the switch:
+
+```json
+SW1#show flash:
+Directory of flash:/
+
+    1  -rw-     4414921            c2960-lanbase-mz.122-25.FX.bin
+    3  -rw-     4670455            c2960-lanbasek9-mz.150-2.SE4.bin
+    2  -rw-        1052            config.text
+
+64016384 bytes total (54929956 bytes free)
+```
+
+3. The last step is to configure the switch to load the new IOS version. If we reboot the system now, the old IOS file will be loaded:
+
+```json
+SW1#reload
+Proceed with reload? [confirm]
+C2960 Boot Loader (C2960-HBOOT-M) Version 12.2(25r)FX, RELEASE SOFTWARE (fc4)
+Cisco WS-C2960-24TT (RC32300) processor (revision C0) with 21039K bytes of memory.
+2960-24TT starting...
+Base ethernet MAC Address: 000C.8536.AA3B
+```
+
+We need to instruct the switch to load the new file. The easiest way to do it is by using the _boot system_ command. This command accepts a single parameter – the name of the file to load:
+
+```json
+SW1(config)#boot system c2960-lanbasek9-mz.150-2.SE4.bin
+```
+
+4. The last step is to save the configuration and reload the device. We can verify that the newer version of IOS is being used by issuing the _show version_ command:
+
+```json
+SW1#show version
+Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2013 by Cisco Systems, Inc.
+Compiled Wed 26-Jun-13 02:49 by mnguyen
+```
+
 ---
 
 ## Copy files with FTP
+
+IOS includes a built-in FTP client that can be used to transfer images to and from the Cisco device. Unlike TFTP, FTP supports authentication, and you will need to provide a valid FTP server username and password.
+
+The following steps are required for FTP transfers:
+
+1. create an FTP username and password by using the _ip ftp username USERNAME_ and _ip ftp password PASSWORD_ global configuration command. We need to provide the username and password that were already created on the FTP server.
+2. issue the _copy ftp flash_ exec mode command and follow the wizard.
+
+Here is an example. Let’s say that we want to transfer the image file from the FTP server to a Cisco switch. We can do this using the following set of commands:
+
+```json
+SW1(config)#ip ftp username tuna
+SW1(config)#ip ftp password peyo
+SW1(config)#end
+SW1#
+%SYS-5-CONFIG_I: Configured from console by console
+
+SW1#copy ftp flash
+Address or name of remote host []? 10.0.0.100
+Source filename []? c2960-lanbasek9-mz.150-2.SE4.bin
+Destination filename [c2960-lanbasek9-mz.150-2.SE4.bin]? 
+
+Accessing ftp://10.0.0.100/c2960-lanbasek9-mz.150-2.SE4.bin...
+[OK - 4670455 bytes]
+
+4670455 bytes copied in 10.02 secs (37473 bytes/sec)
+```
+
+To verify that the file has indeed been transfered, we can use the _show flash:_ command:
+
+```json
+SW1#show flash:
+Directory of flash:/
+
+    1  -rw-     4414921            c2960-lanbase-mz.122-25.FX.bin
+    4  -rw-     4670455            c2960-lanbasek9-mz.150-2.SE4.bin
+    2  -rw-        1052            config.text
+We can also transfer files from the IOS device to the FTP server, for example to backup the startup configuration. Here is an example of copying the startup configuration of a switch to the FTP server:
+
+SW1#copy startup-config ftp
+Address or name of remote host []? 10.0.0.100
+Destination filename [SW1-confg]? 
+
+Writing startup-config...
+[OK - 1052 bytes]
+
+1052 bytes copied in 0.09 secs (11000 bytes/sec)
+64016384 bytes total (54929956 bytes free)
+```
 
 ---
 
 ## show version command
 
+The exec mode _show version_ command displays information about the device, such as:
+
+- the IOS version running on the device
+- number of interfaces
+- device model
+- time of the last reboot
+- amount of memory available on the device
+
+Here is an example output of this command executed on a Cisco Catalyst 2960 series switch:
+
+```json
+SW1#show version 
+Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2013 by Cisco Systems, Inc.
+Compiled Wed 26-Jun-13 02:49 by mnguyen
+
+ROM: Bootstrap program is C2960 boot loader
+BOOTLDR: C2960 Boot Loader (C2960-HBOOT-M) Version 12.2(25r)FX, RELEASE SOFTWARE (fc4)
+
+Switch uptime is 39 minutes
+System returned to ROM by power-on
+System image file is "flash:c2960-lanbasek9-mz.150-2.SE4.bin"
+
+This product contains cryptographic features and is subject to United
+....
+
+cisco WS-C2960-24TT-L (PowerPC405) processor (revision B0) with 65536K bytes of memory.
+Processor board ID FOC1010X104
+Last reset from power-on
+1 Virtual Ethernet interface
+24 FastEthernet interfaces
+2 Gigabit Ethernet interfaces
+The password-recovery mechanism is enabled.
+
+64K bytes of flash-simulated non-volatile configuration memory.
+Base ethernet MAC Address : 00:17:59:A7:51:80
+Motherboard assembly number : 73-10390-03
+Power supply part number : 341-0097-02
+Motherboard serial number : FOC10093R12
+Power supply serial number : AZS1007032H
+Model revision number : B0
+Motherboard revision number : B0
+Model number : WS-C2960-24TT-L
+System serial number : FOC1010X104
+Top Assembly Part Number : 800-27221-02
+Top Assembly Revision Number : A0
+Version ID : V02
+CLEI Code Number : COM3L00BRA
+Hardware Board Revision Number : 0x01
+
+
+Switch Ports Model SW Version SW Image
+------ ----- ----- ---------- ----------
+* 1 26 WS-C2960-24TT-L 15.0(2)SE4 C2960-LANBASEK9-M
+
+
+Configuration register is 0xF
+```
+
+As you can see from the output above, this command gives us detailed information about the IOS device. Here is a brief description of the most important information:
+
+- **Version 15.0(2)SE4** – the IOS version that the device is running
+- **Switch uptime is 39 minutes** – the uptime of the device
+- **System returned to ROM by power-on** – the reason for the last reload of the device (e.g. whether the device was reloaded using the reload command, powered off and on…)
+- **System image file is “flash:c2960-lanbasek9-mz.150-2.SE4.bin”** – the image file of the running IOS
+- **cisco WS-C2960-24TT-L (PowerPC405) processor** – CPU type
+- **24 FastEthernet interfaces, 2 Gigabit Ethernet interfaces** – physical interfaces on the device
+- **Configuration register is 0xF** – the configuration register setting that defines which IOS software and configuration file to load.
+
 ---
 
 ## TCP three-way handshake
+
+Since TCP is a connection-oriented protocol, a connection needs to be established before two devices can communicate. TCP uses a process called three-way handshake to negotiate the sequence and acknowledgment fields and start the session. Here is a graphical representation of the process:
+
+![](https://drive.google.com/uc?export=view&id=1KNizA2UBbYT4D9GVyVPZCiMC5AIHUDVJ)
+
+As the name implies, the three way handshake process consists of three steps:
+
+1. Host A initiates the connection by sending the TCP SYN packet to the destination host. The packet contains the random sequence number (e.g. **5432**) which marks the beginning of the sequence numbers for data that the Host A will transmit.
+2. The Server receives the packet and responds with its own sequence number. The response also includes the acknowledgment number, which is Host A’s sequence number incremented by 1 (in our case, that would be **5433**).
+3. Host A acknowledges the response of the Server by sending the acknowledgment number, which is the Server’s sequence number incremented by 1.
+ 
+
+Here is another picture with the numbers included:
+
+![](https://drive.google.com/uc?export=view&id=1ij2h-6ZSv6AZt_-haahv2n3Xy6MHgFrw)
+
+After the data transmission process is finished, TCP will terminate the connection between two endpoints. This four-step process is illustrated below:
+
+![](https://drive.google.com/uc?export=view&id=1Il4qJrElqTshFa6kx7RCGkcwj0K5wZgd)
+
+1. The client application that wants to close the connection sends a TCP segment with the FIN (Finished) flag set to 1.
+2. The server receives the TCP segment and acknowledges it with the ACK segment.
+3. Server sends its own TCP segment with the FIN flag set to 1 to the client in order to terminate the connection.
+4. The client acknowledges the server’s FIN segment and closes the connection.
 
 ---
 
 ## Erasing configuration files
 
+In certain scenarion you might want to remove the existion configuration of an Cisco IOS device and restore the device to the factory settings. To do this, you will need to access the device over the network or through the console and issue one of the following commands (not all commands are supported on all Cisco devices):
+
+- _write erase_
+- _erase nvram:_
+- _erase startup-config_
+
+Once you execute one of the commands above, you will need to reload the device. Here is an example:
+
+```json
+R1#write erase
+Erasing the nvram filesystem will remove all configuration files! Continue? [confirm]
+[OK]
+Erase of nvram: complete
+%SYS-7-NV_BLOCK_INIT: Initialized the geometry of nvram
+R1#reload
+Proceed with reload? [confirm]
+```
+
 ---
 
 ## show interfaces status command
+
+The status of an interface on a Cisco switch can be checked using the _show interface TYPE_ exec mode command. Consider the following example:
+
+```json
+SW1#show interfaces fa0/1
+FastEthernet0/1 is up, line protocol is up (connected)
+  Hardware is Lance, address is 0040.0b21.0b01 (bia 0040.0b21.0b01)
+ BW 100000 Kbit, DLY 1000 usec,
+     reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA, loopback not set
+  Keepalive set (10 sec)
+  Full-duplex, 100Mb/s
+  input flow-control is off, output flow-control is off
+  ARP type: ARPA, ARP Timeout 04:00:00
+  Last input 00:00:08, output 00:00:05, output hang never
+  Last clearing of "show interface" counters never
+  Input queue: 0/75/0/0 (size/max/drops/flushes); Total output drops: 0
+  Queueing strategy: fifo
+  Output queue :0/40 (size/max)
+  5 minute input rate 0 bits/sec, 0 packets/sec
+  5 minute output rate 0 bits/sec, 0 packets/sec
+     956 packets input, 193351 bytes, 0 no buffer
+     Received 956 broadcasts, 0 runts, 0 giants, 0 throttles
+     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort
+     0 watchdog, 0 multicast, 0 pause input
+     0 input packets with dribble condition detected
+     2357 packets output, 263570 bytes, 0 underruns
+     0 output errors, 0 collisions, 10 interface resets
+     0 babbles, 0 late collision, 0 deferred
+     0 lost carrier, 0 no carrier
+     0 output buffer failures, 0 output buffers swapped out
+```
+
+As you can see from the output above, this command gives us plenty of information about the specified interface. Here is a brief description of the most important lines:
+
+- **FastEthernet0/1 is up, line protocol is up (connected)** – indicates that the interface is in the up and up state
+- **Hardware is Lance, address is 0040.0b21.0b01** – Lance indicates the chipset used by the port. The MAC address of the port is also listed
+- **BW 100000 Kbit, DLY 1000 usec** – the bandwidth and delay of the interface
+- **Full-duplex, 100Mb/s** – the port operates in the full duplex mode and supports the speed of up to 100Mb/s
+- **956 packets input, 193351 bytes, 0 no buffer** – the total number and size of packets received by the port.
+- **Received 956 broadcasts** – the total number of broadcast packets received by the device.
+- **0 input errors, 0 CRC, 0 frame…** – the number of received packets that were received incorrectly.
+- **2357 packets output, 263570 bytes, 0 underruns** – he total number and size of packets sent by the port.
+- **0 output errors, 0 collisions** – the number of packets that were not sent because of an error and the number of Ethernet collisions.
 
 ---
 
 ## Configure Cisco router as a DHCP client
 
+Cisco routers can be configure as both DHCP servers and DHCP clients. An interface on a router that connects to the Internet Service Provider (ISP) is often configured as a DHCP client. This way, the ISP can provide the IP information to the client device.
+
+To configure an interface as a DHCP client, the ip address dhcp interface mode command is used. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1wJqgOAkIpxMHA-Wrs2BlB_9rZ70GHv33)
+
+We have a small network consisting of a router and a DHCP server. We want to configure the interface Gi0/0 on the router as a DHCP client. This is how this is done:
+
+```json
+R1(config)#int Gi0/0
+R1(config-if)#ip address dhcp
+```
+
+We can verify that the Gi0/0 interface has indeed got its IP address from the DHCP server by running the _show ip int brief_ command:
+
+```json
+R1#show ip int brief
+Interface              IP-Address      OK? Method Status                Protocol 
+GigabitEthernet0/0     192.168.0.1     YES DHCP   up                    up 
+GigabitEthernet0/1     unassigned      YES unset  administratively down down
+```
+
+The _DHCP_ keyword in the method column indicates that the IP information were obtained by the DHCP server.
+
+> **NOTE**
+If you want to configure a Cisco switch as a DHCP client, the _ip address dhcp_ command is used under the VLAN 1 configuration mode.
 ---
 
 ## logging synchronous command
+
+By default, IOS displays syslog messages to the console users at any time, even during the typing of a command. Consider the following example:
+
+```json
+R1(config-if)#ip address 192.168.0.100 255.2
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to down
+55.255.0
+```
+
+Notice how the command was interrupted and the syslog message was shown. To prevent this, the _logging synchronous console line mode_ command is used:
+
+```json
+R1(config)#ip address 192.168.0.100 255.2
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+R1(config)#ip address 192.168.0.100 255.2
+```
+
+Now, the syslog message was shown, but the command was copied to the next line below the message.
 
 ---
 
 ## exec-timeout command
 
+By default, an IOS device will disconnect a console or VTY user after 10 minutes of inactivity. You can specify a different inactivity timer using the exec-timeout MINUTES SECONDS line mode command.
+
+For example, to disconnect a console user after 90 seconds of inactivity, we can use the following command:
+
+```json
+R1(config)#line con 0
+R1(config-line)#exec-timeout 1 30
+```
+
+After 90 seconds of inactivity, the session will be disconnected and the user will need to supply the console password to log back in:
+
+```json
+R1(config-line)#
+
+R1 con0 is now available
+
+Press RETURN to get started.
+
+User Access Verification
+
+Password:
+```
+
+> **NOTE**
+To disable the timeout, use the value of 0 (not recommended in production environments!)
+
 ---
 
 ## no ip domain-lookup command
+
+By default, any single word entered on an IOS device that is not recognized as a valid command is treated as a hostname to which you want to telnet. The device will try to translate that word to an IP address in a process that can last about a minute.
+
+Consider the following example:
+
+```json
+R1#writte
+Translating "writte"...domain server (255.255.255.255)
+% Unknown command or computer name, or unable to find computer address
+```
+
+In the output above you can see that I’ve mistyped the command _write_. The router entered the DNS resolution process which lasted about a minute. This can be annoying and this is why this feature is often turned off, especially in the lab environments.
+
+If you don’t need to have a DNS server configured for your router, you can use the _no ip domain-lookup_ command to disable the DNS translation process:
+
+```json
+R1(config)#no ip domain-lookup
+```
+
+Now, if I mistype a command, the router will not perform a DNS resolution process:
+
+```json
+R1#writte
+Translating "writte"
+% Unknown command or computer name, or unable to find computer address
+
+R1#
+```
 
 ---
 
 ## Encrypt local usernames and passwords
 
+We’ve learned it is possible to configure local usernames and passwords on a Cisco device and then use them to login to the device. To do this, we’ve used the _username USER password PASSWORD_ command, like in the example below:
+
+```json
+R1(config)#username tuna password peyo
+```
+
+However, there is one problem with this command – the password is stored in clear text in the configuration:
+
+```json
+R1#show running-config 
+Building configuration...
+
+Current configuration : 635 bytes
+!
+version 15.1
+....
+!
+username tuna password 0 peyo
+!
+...
+```
+
+We can use the service password-encryption global configuration command to encrypt the password, but this method does not provide a high level of network security and the passwords can be cracked.
+
+To rectify this, Cisco introduced a new command – _username USER secret PASSWORD_. This command uses a stronger type of encryption:
+
+```json
+R1(config)#username tuna secret peyo
+R1(config)#
+R1(config)#do show run | include username
+username tuna secret 5 $1$mERr$Ux7QsUATkj4kWVORI4.m21
+```
+
+Note that (unlike with the _enable password_ and _enable secret_ commands) you can’t have both the username password and username secret commands configured at the same time:
+
+```json
+R1(config)#username tuna password peyo
+ERROR: Can not have both a user password and a user secret.
+Please choose one or the other.
+```
+
 ---
 
 ## Cisco console rollover cable
+
+A **rollover cable** is usually shipped with each Cisco device. This cable connects a serial port on your computer to the console port of the device and it is used for the device’s initial configuration. It is called rollover because the wires on one end are rolled at the other end – the wire at pin 1 connects to the pin 8 on the other side, the wire at pin 2 to the pin 7, etc.
+
+The cable is of light blue color with a DB-9 connector at one end and a RJ-45 connector at the other:
+
+![](https://drive.google.com/uc?export=view&id=11ix4yZ3b5vksjwwOccznAsO13tWHAfWD)
+
+You connect the rollover cable to the serial port on your computer. On the Cisco device, there is a blue console port (usually marked in blue) to which you connect the other end of the cable:After the cable is connected, you can access the device using the terminal emulation software (e.g. Putty or HyperTerminal). You need to configure the PC’s serial port to match the console port settings. Here are the defaults:
+
+- 9600 baud
+- no hardware flow control
+- 8 data bits
+- no parity bits
+- 1 stop bit
+
+![](https://drive.google.com/uc?export=view&id=1Smm7a0Fr2NF0QjSLeD8UERDMuhz3DNmM)
+
+> **NOTE**
+Newer Cisco devices usually include a USB console port, since serial ports are rare on modern PCs.
 
 ---
 
 ## Create a static host route
 
+In one of the previous lessons we’ve defined a static route for a specific subnet by using the subnet mask of **255.255.255.0** in the _ip route_ command. IOS also allows you to specify a static host route for a single host by specifying the **255.255.255.255 (/32)** subnet mask in the _ip route_ command.
+
+Static host routes are usually used when redundant paths exist. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=14h56KrG4ktAuJR5D_bYHEV3pcO2HDHE5)
+
+In the example above you can see that we have a network of three routers and a switch connected to the 10.0.0.0/24 subnet. R1 has two paths to reach that subnet – one going through R2, and the other one through R3. Let’s say that we want to use the path going through R2 for all hosts, except the **10.0.0.10/24** host. For that host, we want to use the route going through R3. Here is how this can be done:
+
+```json
+R1(config)#ip route 10.0.0.0 255.255.255.0 192.168.0.2
+R1(config)#ip route 10.0.0.10 255.255.255.255 172.16.0.2
+```
+
+In the first command we’ve specified R1 to send all packets destined for the 10.0.0.0/24 network to 192.168.0.2 (the IP address of the interface on R2 connected to R1). However, for packets destined for the 10.0.0.10 host, we’ve instructed R1 to send all packets to 172.16.0.2 (the IP address of the interface on R3).
+
+The two routes specified in the ip routes command above overlap (e.g. the IP address 10.0.0.10 is also included in the first command); however, routers always use a more specific route with the longer prefix length. Since /32 is a more specific route than /24, R1 will use the route going through R3 to reach 10.0.0.10.
+
+We can verify that packets are indeed going through desired routes by using the _traceroute_ command on R1:
+
+```json
+R1#traceroute 10.0.0.5
+Type escape sequence to abort.
+Tracing the route to 10.0.0.5
+
+  1   192.168.0.2     0 msec    0 msec    0 msec    
+  2   10.0.0.5        0 msec    0 msec    0 msec    
+R1#
+R1#traceroute 10.0.0.10
+Type escape sequence to abort.
+Tracing the route to 10.0.0.10
+
+  1   172.16.0.2      0 msec    0 msec    0 msec    
+  2   10.0.0.10       0 msec    0 msec    0 msec    
+```
+
+> **NOTE**
+The hosts also need to be configured with a correct default gateway – 10.0.0.10 needs to have the IP address of R3 configured as its default gateway, and other hosts on the 10.0.0.0/24 subnet need to have R2 configure as their default gateway.
+
 ---
 
 ## Uniform Resource Locator (URL) structure
+
+An URL is a string of characters that contains information about how to fetch a resource from its location. An URL specifies the primary access mechanism and the network location of a resource. A typical URL consists of the following components:
+
+- the protocol used to connect to the server (e.g. **HTTPS**)
+- the server hostname (e.g. **geek-university.com**)
+- the document path (e.g. **/course**)
+ 
+
+Here is a graphical representation of these components:
+
+![](https://drive.google.com/uc?export=view&id=1FJiDLgbgBRO9uoZYmcboouCZu7chz5ZI)
+
+URLs can also be used to reference documents other than the web sites. Here are some examples of using URLs to reference an FTP resource, mail address and local files:
+
+- **ftp://www.geek-university.com/uploads.zip** – refers to the uploads.zip file on the geek-university.com server that can be accessed using FTP
+- **mailto:tuna@geek-university.com** – a hyperlink that allows users to to send emails to tuna@geek-university.com using their default email client program.
+- **file://C:\images** – used to open the C:\images folder on the local computer
 
 ---
 
 ## The ARP table on a Cisco router
 
+Just like regular hosts, if a Cisco router wants to exchange frames with a host in the same subnet, it needs to know its MAC address. The IP-to-MAC address mapping are kept in the router’s ARP table. Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1qR9e9YoCNJ3q0zvGhM18vzECJxnn1W1O)
+
+R1 has two connected subnets – 10.0.0.0/24 and 172.16.0.0./16. Before exchanging frames with either host, R1 will need to know their MAC addresses. Here is the output of the R1’s ARP table:
+
+```json
+R1#show ip arp
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.0.1                -   0060.5C32.7E01  ARPA   GigabitEthernet0/0
+Internet  10.0.0.10               6   000C.85CA.AD73  ARPA   GigabitEthernet0/0
+Internet  172.16.0.1              -   0060.5C32.7E02  ARPA   GigabitEthernet0/1
+Internet  172.16.0.2              10  0001.63DB.1802  ARPA   GigabitEthernet0/1
+```
+
+The ARP table contains two entries for R1’s own two interfaces with the IP address of 10.0.0.1 and 172.16.0.1. The – in the age column indicates that the entry will never be timed out.
+
+The ARP table also lists the MAC addresses of the two connected hosts. Consider the entry for Host A:
+
+```json
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.0.10               6   000C.85CA.AD73  ARPA   GigabitEthernet0/0
+```
+
+Here is a brief description of each field:
+
+- **Protocol** – the protocol type, almost always Internet
+- **Address** – the IP address associated with the MAC address, in our case the IP address of Host A
+- **Age** – by default, an entry will be removed from the ARP table if it wasn’t used in 240 minutes. 6 in this column means that the entry was last used 6 minutes ago. Each time an entry is used, the age will be reset back to zero.
+- **Hardware** – the MAC address of the host with the corresponding IP address.
+- **Type** – the type of hardware address. For Ethernet, this value will always be ARPA.
+- **Interface** – the interface on R1 on which the corresponding host is connected.
+
+Here are the steps R1 needs to take before forwarding frames to Host A:
+
+1. R1 wants to communicate with Host A. R1 checks its routing table. The subnet on which Host A resides is a directly connected subnet.
+2. R1 checks its ARP table to find out whether the Host A’s MAC address is known. If it is not, R1 will send an ARP request to the broadcast MAC address of FF:FF:FF:FF:FF:FF.
+3. Host A receives the frame and sends its MAC address to R1 (ARP reply). The host also updates its own ARP table with the MAC address of the Gigabit0/0 interface on R1.
+4. R1 receives the reply and updates the ARP table with the MAC address of Host A.
+5. Since both hosts now know each other MAC addresses, the communication can occur.
+
 ---
 
 ## Default static route
+
+A default route defines where packets will be sent if no specific route for the destination network is listed in the routing table. If no default route is set, the router will discard all packets with destination addresses not found its routing table.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1u3AEXquqK2sS3_yyFN0Sl-h8itGjuA70)
+
+We have a network of three routers. R1 is directly connected to two subnets – 192.168.0.0/24 and 10.0.0.0/24. R3 is connected to the Internet.
+
+Here is the routing table on R1:
+
+```json
+R1#show ip route
+
+Gateway of last resort is not set
+
+     10.0.0.0/8 is variably subnetted, 2 subnets, 2 masks
+C       10.0.0.0/24 is directly connected, GigabitEthernet0/1
+L       10.0.0.1/32 is directly connected, GigabitEthernet0/1
+     192.168.0.0/24 is variably subnetted, 2 subnets, 2 masks
+C       192.168.0.0/24 is directly connected, GigabitEthernet0/0
+L       192.168.0.1/32 is directly connected, GigabitEthernet0/0
+```
+
+Notice the lack of the default gateway or default route. If R1 tries to access a public IP address (e.g. 4.2.2.2), the packets will be dropped because no route to that IP address has been found in the routing table:
+
+![](https://drive.google.com/uc?export=view&id=1niF6Z08y-5G4Wrmh33N4NA5a49kjbylU)
+
+To create a default static route on R1, we need to use the following command:
+
+```json
+R1(config)#ip route 0.0.0.0 0.0.0.0 10.0.0.2
+```
+
+The command above instructs R1 to match all IP address and subnet masks and send the packets to 10.0.0.2 (the interface on R3 that is connected to R1). The routing table on R1 now looks like this:
+
+```json
+R1#show ip route
+
+Gateway of last resort is 10.0.0.2 to network 0.0.0.0
+
+     10.0.0.0/8 is variably subnetted, 2 subnets, 2 masks
+C       10.0.0.0/24 is directly connected, GigabitEthernet0/1
+L       10.0.0.1/32 is directly connected, GigabitEthernet0/1
+     192.168.0.0/24 is variably subnetted, 2 subnets, 2 masks
+C       192.168.0.0/24 is directly connected, GigabitEthernet0/0
+L       192.168.0.1/32 is directly connected, GigabitEthernet0/0
+S*   0.0.0.0/0 [1/0] via 10.0.0.2
+```
+
+Notice how the gateway of last restort is now set to 10.0.0.2. There is also a route marked with S* in the routing table, which means that the static default route we’ve just configured is a candidate default route (since routers can learn about multiple default routes), and * indicates that this static route is a candidate to become the default route.
+
+Ping will now succeed:
+
+```json
+R1#ping 4.2.2.2
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 4.2.2.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 0/0/1 ms
+```
+
+> **NOTE**
+Connected routes always take precedence over static or dynamically discovered routes because they have the administrative distance value of 0 (the lowest possible value). In our case, this means that R1 will send out packets destined for 192.168.0.0/24 according to the specified connected route.
 
 ---
 
 ## Configure timezone and Daylight Saving Time (DST)
 
+It is recommended to set the correct timezone and adjust the DST setting before configuring a router as an NTP client. The syntax of the command used to set the timezone is:
+
+```json
+(config)clock timezone NAME HOURS [MINUTES]
+```
+
+The name of the timezone can be anything you like. After the name parameter, you need to specify the difference in hours (and optionally minutes) from **Coordinated Universal Time (UTC)**. For example, to specify the **Atlantic Standard Time**, which is 4 hours behind UTC, we would use the following command:
+
+```json
+R1(config)#clock timezone AST -4
+```
+
+The syntax of the command used to adjust for DST is:
+
+```json
+(config)clock summer-time NAME recurring [week day month hh:mm week day month hh:mm [offset]]
+```
+
+Again, the _name_ parameter can be anything you like. The _recurring_ keyword instructs the router to update the clock each year. If you press enter after the _recurring_ keyword, the router will use the U.S. DST rules for the annual time changes in April and October. You can also manually set the date and time for DST according to your location. For example, to specify the DST that starts on the last Sunday of March and ends on the last Sunday of October, we would use the following command:
+
+```json
+R1(config)clock summer-time DST recurring last Sunday March
+```
+
 ---
 
 ## DHCP relay agent
+
+When a device is configured as a DHCP client, it will send a a broadcast packet to discover DHCP servers on the network. Broadcast packets are not forwarded by routers by default, so if a DHCP server is in a different network than the DHCP client, it will not receive the request. Consider the following scenario:
+
+![](https://drive.google.com/uc?export=view&id=1FsFKThYl54CgqOmgi3gnvwoD5-m_VoRx)
+
+The workstation on the left is configured as a DHCP client. R2 on the right is configured as a DHCP server. The workstation sends a **DHCP discover** packet, but it receives no request, since R1 doesn’t forward the packet to R2 (broadcast packets stay on the local subnet).
+
+To rectify this, we can configure R1 to act as a DHCP relay agent and forward the request to the configured DHCP server. This is done by issuing the *ip helper-address DHCP_SERVER_IP_ADDRESS* command on its **Gi0/0** interface. This command instructs the router to do the following:
+
+1. watch for DHCP messages on the interface
+2. when a DHCP packet arrives, set the packet’s source IP address to the IP address of Gi0/0
+3. change the destination IP address of the packet from 255.255.255.255 (the broadcast address) to the IP address of the DHCP server and send it to R2
+4. when the answer from the DHCP server is received, change the packet’s destination IP to 255.255.255.255 and send it out its Gi0/0 interface, so that the workstation (which does not have an IP address yet) can receive the answer.
+
+To configure the interface Gi0/0 on R1 to forward DHCP packets, only a single command is needed:
+
+```json
+R1(config-if)#ip helper-address 172.16.0.2
+```
+
+To make sure that the workstation indeed got its IP parameters, we can issue the _ipconfig_ command:
+
+```json
+C:\>ipconfig
+
+FastEthernet0 Connection:(default port)
+
+Link-local IPv6 Address.........: FE80::2E0:B0FF:FEB3:73E
+IP Address......................: 10.0.0.104
+Subnet Mask.....................: 255.255.255.0
+Default Gateway.................: 10.0.0.1
+```
 
 ---
 
 ## Interface status codes
 
+Interface status codes can tell you whether an interface on a Cisco router or a switch is working. Status codes of an interface can be displayed using the _show interface TYPE_ command, e.g.:
+
+```json
+SW1#show interface fa0/1
+FastEthernet0/1 is up, line protocol is up (connected)
+  Hardware is Lance, address is 0060.70d8.0001 (bia 0060.70d8.0001)
+ BW 100000 Kbit, DLY 1000 usec,
+     reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA, loopback not set
+  Keepalive set (10 sec)
+```
+
+The first line of the output indicates the working state of the interface. The first status code (known as **line status**) indicates that the Layer 1 is working (_FastEthernet0/1 is up_). The second status code (known as **protocol status**) indicates that Layer 2 is also working (_line protocol is up_) and is always _Down_ if the line status is _Down_. Finally, the word at the end of the line indicates the working state of the interface (_connected_ in our case).
+
+All possible combinations of the status codes are given in the table below:
+
+![](https://drive.google.com/uc?export=view&id=1Iq1uI7l8uFXIcG7LbEICAJAVwpKia8W2)
+
+> **NOTE**
+Only interfaces with status codes of **up and up** will forward or receive frames.
+
 ---
 
 ## Auxiliary Port on a Cisco router
+
+Most Cisco routers include an additional auxiliary (Aux) port as a backup async port. This port is commonly used as a dial-up port for remote router management. It is connected to a modem and enables an administrator to make a phone call to connect to the router’s CLI.
+
+The following figure shows how to connect a modem to an aux port on a router (image source: Cisco):
+
+![](https://drive.google.com/uc?export=view&id=19zyzdY1jrkcuaHLivJa6S9HEQhLYLHHV)
+
+The network administrator uses a terminal emulation program to connect to the router over the aux port. The configuration of the aux port resembles the the console port configuration:
+
+```json
+Router(config)#line aux 0
+Router(config-line)#password cisco
+Router(config-line)#login
+```
+
+The code above enables password checking for users dialing into the router.
 
 ---
 
 ## Syslog explained
 
+**Syslog** is a standard for message logging. Syslog messages are generated on Cisco devices whenever an event takes place – for example, when an interface goes down or a port security violation occurs.
+
+You’ve probably already encountered syslog messages when you were connected to a Cisco device through the console – Cisco devices show syslog messages by default to the console users:
+
+```json
+R1#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to down
+```
+
+This is because the _logging console_ global configuration command is enabled by default. SSH and Telnet users need to execute the _terminal monitor_ EXEC mode command in order to see the messages:
+
+```json
+R1#terminal monitor
+R1#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+```
+
+In the example above you can see that the logged in user executed the _terminal monitor_ command. Because of that, the telnet user was notified via a syslog message when the Gi0/1 interface went up a couple of moments later.
+
+It is recommended to store the logs generated by Cisco devices to a central syslog server. To instruct a device to send logs to the syslog server, we can use the *logging IP_ADDRESS* command:
+
+```json
+R1(config)#logging 10.0.0.10
+```
+
+Now, logs generated on R1 will be sent to the syslog server with the IP address of 10.0.0.10. Of course, you need to have a Syslog server (e.g. Kiwi syslog) installed and configured.
+
+> **NOTE**
+It is also possible (and recommended) to use specify **hostname** instead of the IP address in the _logging_ command. The command is _logging host HOSTNAME_.
+
 ---
 
 ## Syslog message format
 
----
+Syslog messages that appear on a Cisco device consists of several parts. Consider the following message:
+
+```json
+*Jan 18 03:02:42: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to down
+```
+
+The message consists of the following parts:
+
+- **Jan 18 03:02:42** – the timestamp
+- **%LINEPROTO** – the source that generated the message. It can be a hardware device (e,g. a router), a protocol, or a module of the system software.
+- **5** – the severity level, from 0 to 7, with lower numbers being more critical.
+- **UPDOWN** – the unique mnemonic for the message
+- **Line protocol on Interface GigabitEthernet0/0, changed state to down** – the description of the event
+
+Severity levels are numbered 0 to 7:
+
+- 0 – emergency (System unusable)
+- 1 – alert (Immediate action needed)
+- 2 – critical events (Critical condition)
+- 3 – error events (Error condition)
+- 4 – warning events (Warning condition)
+- 5 – notification events (Normal but significant condition)
+- 6 – informal events (Informational message only)
+- 7 – debug messages (Appears during debugging only)
+
+In our example the message has the severity level of 5, which is a notification event. The first five levels (0-4) are used by messages that indicate that the functionality of the device is affected. Levels 5 and 6 are used by notification messages, while the level 7 is reserved for debug messages.
+
+The severity levels can be used to specify the type of messages that will be logged. For example, if you think that you are getting too many non-important messages when logged in through a console, the global configuration command _logging console 2_ will instruct the device to only log messages of the severity level 0, 1 and 2 to the console.

@@ -4,16 +4,110 @@ title: 'LAN Switching'
 
 ## Layer 2 switching
 
+**Layer 2 switching** (or **Data Link layer switching**) is the process of using devices’ MAC addresses to decide where to forward frames. Switches and bridges are used for Layer 2 switching. They break up one large collision domain into multiple smaller ones.
+
+In a typical LAN, all hosts are connected to one central device. In the past, the device was usually a hub. But hubs had many disadvantages, such as not being aware of traffic that passes through them, creating one large collision domain, etc. To overcome some of the problems with hubs, bridges were created. They were better than hubs because they created multiple collision domains, but they had limited number of ports. Finally, switches were created and are still widely used today. Switches have more ports than bridges, can inspect incoming traffic and make forwarding decisions accordingly. Also. each port on a switch is a separate collision domain, so no packet collisions should occur.
+
+Layer 2 switches are faster than routers because they don’t take up time looking at the Network layer header information. Instead, they look at the frame’s hardware addresses to decide what to do with the frame – to forward, flood, or drop it. Here are other major advantages of Layer 2 switching:
+
+- fast hardware-based bridging (using ASICs chips)
+- wire speed
+- low latency
+- low cost
+
+Here is an example of the typical LAN network – the switch serves as a central device that connects all devices together:
+
+![](https://drive.google.com/uc?export=view&id=1SACVo8tXzKniq5m_arAoj4YouQki0MdI)
+
+### Differences between hubs and switches
+
+To better understand the concept of frame switching based on the hardware address of a device, you need to understand how switches differ from hubs.
+
+First, consider an example of a LAN in which all hosts connects to a hub:
+
+![](https://drive.google.com/uc?export=view&id=1PB6rXEEWEHFJphtdfS2AAzNmbhqo3xFR)
+
+As mentioned previously, hubs create only a single collision domain, so the chance for a collision to occur is high. The hub depicted above simply repeats the signal it receives out all ports, except the one from which the signal was received, so no frame filtering takes place. Imagine if you had 20 hosts connected to a hub, a packet would be sent to 19 hosts, instead of just one! This can also cause security problems, because an attacker can capture all traffic on the network.
+
+![](https://drive.google.com/uc?export=view&id=1L1q1CyHXlXRYfIQ8okMHBwZUgUhvV8sy)
+
+Now consider the way the switches work. We have the same topology as above, only this time we are using a switch instead of a hub:
+
+![](https://drive.google.com/uc?export=view&id=1dCUUZTOTyDHupdVZeaIeTM0v9TtExH_N)
+
+Switches increase the number of collision domains. Each port is one collision domain, which means that the chances for collisions to occur are minimal. A switch learns which device is connected to which port and forwards a frame based on the destination MAC address included in the frame. This reduces traffic on the LAN and enhances security.
+
 ---
 
 ## How switches work
+
+Each network card has a unique identifier called a Media Access Control (MAC) address. This address is used in LANs for communication between devices on the same network segment. Devices that want to communicate need to know each other MAC addresses before sending out packets.
+
+Switches also use MAC addresses to make accurate forwarding or filtering decision. When a switch receives a frame, it associates the media access control (MAC) address of the sending device with the port on which it was received. The table that stores such associations is called a **MAC address table**. This table is stored in the volatile memory, so associations are erased after the switch is rebooted.
+
+Switches usually perform these three functions in a LAN:
+
+- **address learning** – switches learn MAC addresses by examining the source MAC address of each received frame.
+- **forward/filter decisions** – switches decide whether to forward or filter a frame, based on the destination MAC address.
+- **loop avoidance** – switches use Spanning Tree Protocol (STP) to prevent network loops while still permitting redundancy.
+
+To better how a network switch works, take a look at the following example:
+
+![](https://drive.google.com/uc?export=view&id=1T7oO2vrnRS6v6sr7iGDOoLJWKPyL-5P4)
+
+Let’s say that host A wants to communicate with host B for the first time. Host A knows the IP address of host B, but since this is the first time the two hosts communicate, the hardware (MAC) addresses are not known. Host A uses the ARP process to find out the MAC address of host B. The switch forwards the ARP request out all ports except the port the host A is connected to. Host B receives the ARP request and responds with its MAC address. Host B also learns the MAC address of host A (because host A sent its MAC address in the ARP request). Host C receives the ARP request, but doesn’t respond since the IP address listed in the request is not its own.
+
+As mentioned above, a switch learns which MAC addresses are associated with which port by examining the source MAC address of each received frame. Because host B responded with the ARP reply that included its MAC address, the switch knows the MAC address of host B and stores that address in its MAC address table. For host A, the switch knows its MAC address because of the ARP request that included it.
+
+Now, when host A sends a packet to host B, the switch looks up in its MAC address table and forwards the frame only out the Fa0/2 port – the port on which host B is connected to. Other hosts on the network will not be involved in the communication:
+
+![](https://drive.google.com/uc?export=view&id=1g5rtE8vsfmQ9HY91KaLNKi_ADatJZKO1)
+
+> **NOTE**
+By default, MAC addresses stay in the switch’s MAC address table for 5 minutes. So if host A and host B decide to communicate inside the next 5 minutes, a new ARP process will not be necessary.
+
+You can display the MAC address table of the switch by using the _show mac-address-table_ command:
+
+![](https://drive.google.com/uc?export=view&id=1Me6-amk2nCM0prBtufra_CFWrpxJF-hh)
+
+The output is pretty much self-explanatory: all ports belong to VLAN 1 and MAC addresses associated with specific ports are listed. **DYNAMIC** means that the address were learned dynamically by using the source MAC address of the received frames.
 
 ---
 
 ## Collision & broadcast domain
 
+A collision domain is, as the name implies, the part of a network where packet collisions can occur. A collision occurs when two devices send a packet at the same time on the shared network segment. The packets collide and both devices must send the packets again, which reduces network efficiency. Collisions are often in a hub environment, because each port on a hub is in the same collision domain. By contrast, each port on a bridge, a switch or a router is in a separate collision domain.
+
+The following example illustrates collision domains:
+
+![](https://drive.google.com/uc?export=view&id=1n8Rvywx1gTZGkPdHoEO3k2vt2Dyk9tUi)
+
+We have 6 collision domains in the example above.
+
+> **NOTE**
+Remember, each port on a hub is in the same collision domain. Each port on a bridge, a switch or router is in a seperate collision domain.
+
+### Broadcast domain
+
+A broadcast domain is the domain in which a broadcast is forwarded. A broadcast domain contains all devices that can reach each other at the data link layer (OSI layer 2) by using broadcast. All ports on a hub or a switch are by default in the same broadcast domain. All ports on a router are in the different broadcast domains and routers don’t forward broadcasts from one broadcast domain to another.
+
+The following example clarifies the concept:
+
+![](https://drive.google.com/uc?export=view&id=13BChQOgQl1VVCx2INjfB7VXekI4fv4Kr)
+
+In the picture above we have three broadcast domains, since all ports on a hub or a switch are in the same broadcast domain, and all ports on a router are in a different broadcast domain.
+
 ---
 
 ## CSMA/CD
 
----
+**CSMA/CD (Carrier Sense Multiple Access with Collision Detection)** helps hosts to decide when to send packets on a shared network segment and how to detect collisions if they occur. For example, in a hub network, two devices can send packets at the same time. This can cause a collision. CSMA/CD enables devices to “sense” the wire to ensure that no other device is currently transmitting packets. But, if two devices “sense” that the wire is clear and send packets at the same time, a collision can occur. If the collision occur, packets have to be resend after a random period of time.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1gY5kpXMgi0UGq_nyGvr0N57TthIHTdqr)
+
+In the topology above we have a hub network. Host A is trying to communicate with host B. Host A “senses” the wire and decides to send packets. But, in the same time, host C sends its packets to host D and the collision occurs. The sending devices (host A and host C) detect the collision and resend the packet after a random period of time.
+
+> **NOTE**
+Since switches are now commonly used in networks instead of hubs, CSMA/CD is not really used anymore. Each port on a swich usually operate in a full duplex mode and there are no packet collisions in a full duplex mode.

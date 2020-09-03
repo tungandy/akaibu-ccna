@@ -4,60 +4,334 @@ title: 'IPv6'
 
 ## What is IPv6?
 
+IPv6 is the newest version of the IP protocol. IPv6 was developed to overcome many deficiencies of IPv4, most notably the problem of IPv4 address exhaustion. Unlike IPv4, which has only about 4.3 billion (2 raised to power 32) available addresses, IPv6 allows for 3.4 × 10 raised to power 38 addresses.
+
+### IPv6 features
+
+Here is a list of the most important features of IPv6:
+
+- **Large address space:** IPv6 uses 128-bit addresses, which means that for each person on the Earth there are 48,000,000,000,000,000,000,000,000,000 addresses!
+- **Enhanced security:** IPSec (Internet Protocol Security) is built into IPv6 as part of the protocol . This means that two devices can dynamically create a secure tunnel without user intervention.
+- **Header improvements:** the packed header used in IPv6 is simpler than the one used in IPv4. The IPv6 header is not protected by a checksum so routers do not need to calculate a checksum for every packet.
+- **No need for NAT:** since every device has a globally unique IPv6 address, there is no need for NAT.
+- **Stateless address autoconfiguration:** IPv6 devices can automatically configure themselves with an IPv6 address.
+
 ---
 
 ## IPv6 address format
+
+Unlike IPv4, which uses a dotted-decimal format with each byte ranges from 0 to 255, IPv6 uses eight groups of four hexadecimal digits separated by colons. For example, this is a valid IPv6 address:
+
+```json
+2340:0023:AABA:0A01:0055:5054:9ABC:ABB0
+```
+
+If you don’t know how to convert hexadecimal number to binary, here is a table that will help you do the conversion:
+
+![](https://drive.google.com/uc?export=view&id=1bqir_cKUUDH5k_2H7TEmoWTTWxLm48So)
+
+### IPv6 address shortening
+
+The IPv6 address given above looks daunting, right? Well, there are two conventions that can help you shorten what must be typed for an IP address:
+
+**1. a leading zero can be omitted**
+
+For example, the address listed above **(2340:0023:AABA:0A01:0055:5054:9ABC:ABB0)** can be shortened to **2340:23:AABA:A01:55:5054:9ABC:ABB0**
+
+**2. successive fields of zeroes can be represented as two colons (::)**
+
+For example, **2340:0000:0000:0000:0455:0000:AAAB:1121** can be written as **2340::0455:0000:AAAB:1121**
+
+> **NOTE**
+You can shorten an address this way only for one such occurrence. The reason is obvious – if you had more than occurence of double colon you wouldn’t know how many sets of zeroes were being omitted from each part.
+
+Here is a couple of more examples that can help you grasp the concept of IPv6 address shortening:
+
+Long version: **1454:0045:0000:0000:4140:0141:0055:ABBB**
+Shortened version: **1454:45::4140:141:55:ABBB**
+
+Long version: **0000:0000:0001:AAAA:BBBC:A222:BBBA:0001**
+Shortened version: **::1:AAAA:BBBC:A222:BBBA:1**
 
 ---
 
 ## Types of IPv6 addresses
 
+Three categories of IPv6 addresses exist:
+
+- **Unicast** – represents a single interface. Packets addressed to a unicast address are delivered to a single interface.
+- **Anycast** – identifies one or more interfaces. For example, servers that support the same function can use the same unicast IP address. Packets sent to that IP address are forwarded to the nearest server. Anycast addresses are used for load-balancing. Known as “one-to-nearest” address.
+- **Multicast** – represent a dynamic group of hosts. Packets sent to this address are delivered to many interfaces. Multicast addresses in IPv6 have a similar purpose as their counterparts in IPv4.
+
+> **NOTE**
+IPv6 doesn’t use the broadcast method. It has been replaced with anycast and multicast addresses.
+
 ---
 
 ## IPv6 unicast addresses
+
+Unicast addresses represent a single interface. Packets addressed to a unicast address will be delivered to a specific network interface.
+
+There are three types of IPv6 unicast addresses:
+
+- **global unicast** – similar to IPv4 public IP addresses. These addresses are assigned by the IANA and used on public networks. They have a prefix of 2000::/3, (all the addresses that begin with binary 001).
+- **unique local** – similar to IPv4 private addresses. They are used in private networks and aren’t routable on the Internet. These addresses have a prefix of FD00::/8.
+- **link local** – these addresses are used for sending packets over the local subnet. Routers do not forward packets with this addresses to other subnets. IPv6 requires a link-local address to be assigned to every network interface on which the IPv6 protocol is enabled. These addresses have a prefix of FE80::/10.
+
+Let’s describe each of the IPv6 unicast address type in more detail.
 
 ---
 
 ## IPv6 global unicast addresses
 
+IPv6 global addresses are similar to IPv4 public addresses. As the name implies, they are routable on the internet. Currently IANA has assigned only **2000::/3** addresses to the global pool.
+
+A global IPv6 address consists of two parts:
+
+- **subnet ID** – 64 bits long. Contains the site prefix (obtained from a Regional Internet Registry) and the subnet ID (subnets within the site).
+- **interface ID** – 64 bits long. typically composed of a part of the MAC address of the interface.
+
+Here is a graphical representation of the two parts of an global IPv6 address:
+
+![](https://drive.google.com/uc?export=view&id=1b5FdDPhcQSWzXaT-xBNipRbVwQGch-iG)
+
 ---
 
 ## IPv6 unique local addresses
+
+Unique local IPv6 addresses have the similar function as IPv4 private addresses. They are not allocated by an address registry and are not meant to be routed outside their domain. Unique local IPv6 addresses begin with **FD00::/8**.
+
+A unique local IPv6 address is constructed by appending a randomly generated 40-bit hexadecimal string to the FD00::/8 prefix. The subnet field and interface ID are created in the same way as with global IPv6 addresses.
+
+A graphical representation of an unique local IPv6 address:
+
+![](https://drive.google.com/uc?export=view&id=1AwdFAg_VEd_OtBjyE4uM4pxEIn9sfb7e)
+
+> **NOTE**
+The original IPv6 RFCs defined a private address class called **site local**. This class has been deprecated and replaced with unique local addresses.
 
 ---
 
 ## IPv6 link-local addresses
 
+Link-local IPv6 addresses have a smaller scope as to how far they can travel: only within a network segment that a host is connected to. Routers will not forward packets destined to a link-local address to other links. A link-local IPv6 address must be assigned to every network interface on which the IPv6 protocol is enabled. A host can automatically derive its own link local IP address or the address can be manually configured.
+
+Link-local addresses have a prefix of **FE80::/10**. They are mostly used for auto-address configuration and neighbour discovery.
+
+Here is a graphical representation of a link local IPv6 address:
+
+![](https://drive.google.com/uc?export=view&id=1FF_EukDViVkSEZUWrFVO-2eHCrRpthLg)
+
 ---
 
 ## IPv6 multicast addresses
+
+Multicast addresses in IPv6 are similar to multicast addresses in IPv4. They are used to communicate with dynamic groupings of hosts, for example all routers on the link (one-to-many distribution).
+
+Here is a graphical representation of the IPv6 multicast packet:
+
+![](https://drive.google.com/uc?export=view&id=1WD0kJy3nIRSpll97_0cdabviDqVJWuiw)
+
+IPv6 multicast addresses start with **FF00::/8**. After the first 8 bits there are 4 bits which represent the flag fields that indicate the nature of specific multicast addresses. Next 4 bits indicate the scope of the IPv6 network for which the multicast traffic is intended. Routers use the scope field to determine whether multicast traffic can be forwarded. The remaining 112 bits of the address make up the multicast Group ID.
+
+Some of the possible scope values are:
+
+1 – interface-local
+2 – link-local
+4 – admin-local
+5 – site-local
+8 – organization-local
+E – global
+
+For example, the addresses that begin with **FF02::/16** are multicast addresses intended to stay on the local link.
+
+The following table lists of some of the most common link local multicast addresses:
+
+![](https://drive.google.com/uc?export=view&id=1982WTAit26_LD2tMUeX33mYUsKBXp__k)
 
 ---
 
 ## IPv6 address prefixes
 
+Here is a summary of the most common address prefixes in IPv6:
+
+![](https://drive.google.com/uc?export=view&id=12UadOqlrEBxOVvOMCE9v30_uh93ScaAt)
+
 ---
 
 ## IPv6 interface identifier
+
+The second part of an IPv6 unicast or anycast address is typically a 64-bit **interface identifier** used to identify a host’s network interface. A 64-bit interface ID is created by inserting the hex value of FFFE in the middle of the MAC address of the network card. Also, the 7th Bit in the first byte is flipped to a binary 1 (if the 7th bit is set to 0 it means that the MAC address is a burned-in MAC address). When this is done, the interface ID is commonly called the **modified extended unique identifier 64 (EUI-64)**.
+
+For example, if the MAC address of a nework card is 00:BB:CC:DD:11:22 the interface ID would be 02BBCCFFFEDD1122.
+
+Why is that so?
+
+Well, first we need to flip the seventh bit from 0 to 1. MAC addresses are in hex format. The binary format of the MAC address looks like this:
+
+```json
+hex 00BBCCDD1122
+binary 0000 0000 1011 1011 1100 1100 1101 1101 0001 0001 0010 0010
+```
+
+We need to flip the seventh bit:
+
+```json
+binary 0000 0010 1011 1011 1100 1100 1101 1101 0001 0001 0010 0010
+```
+
+Now we have this address in hex:
+
+```json
+hex 02BBCCDD1122
+```
+
+Next we need to insert FFFE in the middle of the address listed above:
+
+```json
+hex 02BBCCFFFEDD1122
+```
+
+So, the interface ID is now 02BB:CCFF:FEDD:1122.
+
+Another example, this time with the MAC address of 00000C432A35.
+
+1. Convert to binary and flip the seventh bit to one:
+
+```json
+binary: 0000 0010 0000 0000 0000 1100 0100 0011 0010 1010 0011 0101
+```
+
+2. Convert back to hex:
+
+```json
+hex: 02000C432A35
+```
+
+3. Insert FFFE in the middle:
+
+```json
+interface ID: 02000CFFFE432A35
+```
 
 ---
 
 ## IPv6 transition options
 
+IPv4 and IPv6 networks are not interoperable and the number of devices that use IPv4 number is still large. Some of these devices do not support IPv6 at all, so the migration process is necessary since IPv4 and IPv6 will likely coexist for some time.
+
+Many transition mechanisms have been proposes.
+
+1. **IPv4/IPv6 Dual Stacks** – each device on the network is configured with both an IPv4 and IPv6 address. When two devices want to communicate, they first agree on which IP version to use.
+2. **NAT64** – creates mapping between two address types. e.g. by mapping multiple IPv6 addresses to one IPv4 address.
+3. **Tunneling** – Pv4 packets are tunneled over IPv6 infrastructure or vice versa.
+
+> **NOTE**
+Some methods of the IPv4-IPV6 transition have been deprecated, but they are still mentioned in the older books. Some of these methods are NAT-PT and NAPT-PT.
+
 ---
 
 ## IPv6 routing protocols
+
+Like IPv4, IPv6 also supports routing protocols that enable routers to exchange information about connected networks. IPv6 routing protocols can be internal (RIPng, EIGRP for IPv6…) and external (BGP).
+
+As with IPv4, IPv6 routing protocols can be distance vector and link-state. An example of a distance vector protocol is RIPng with hop count as the metric. An example of a link-state routing protocol is OSPF with cost as the metric.
+
+IPv6 supports the following routing protocols:
+
+- RIPng (RIP New Generation)
+- OSPFv3
+- EIGRP for IPv6
+- IS-IS for IPv6
+- MP-BGP4 (Multiprotocol BGP-4)
 
 ---
 
 ## How to configure IPv6
 
+Cisco routers do not have IPv6 routing enabled by default. To configure IPv6 on a Cisco routers, you need to do two things:
+
+1. enable IPv6 routing on a Cisco router using the ipv6 unicast-routing global configuration command. This command globally enables IPv6 and must be the first command executed on the router.
+2. configure the IPv6 global unicast address on an interface using the _ipv6 address address/prefix-length [eui-64]_ command. If you omit omit the _eui-64_ parameter, you will need to configure the entire address manually. After you enter this command, the **link local address* will be automatically derived.
+
+Here is an IPv6 configuration example:
+
+```json
+R1(config)#ipv6 unicast-routing
+R1(config)#int Gi0/0
+R1(config-if)#ipv6 address 2001:0BB9:AABB:1234::/64 eui-64
+```
+
+We can verify that the IPv6 address has been configured by using the _show ipv6 interface Gi0/0_ command:
+
+```json
+R1#show ipv6 interface Gi0/0
+GigabitEthernet0/0 is up, line protocol is up
+  IPv6 is enabled, link-local address is FE80::201:42FF:FE65:3E01
+  No Virtual link-local address(es):
+  Global unicast address(es):
+    2001:BB9:AABB:1234:201:42FF:FE65:3E01, subnet is 2001:BB9:AABB:1234::/64 [EUI]
+  Joined group address(es):
+    FF02::1
+    FF02::2
+    FF02::1:FF65:3E01
+  MTU is 1500 bytes
+  ....
+```
+
+From the output above we can verify two things:
+
+1. the link local IPv6 address has been automatically configured. Link local IP addresses begin with FE80::/10 and the interface ID is used for the rest of the address. Because the MAC address of the interface is 00:01:42:65:3E01, the calculated address is **FE80::201:42FF:FE65:3E01**.
+2. the global IPv6 address has been created using the modified EUI-64 method. Remember that IPv6 global addresses begin with 2000::/3. So in our case, the IPv6 global address is **2001:BB9:AABB:1234:201:42FF:FE65:3E01**.
+
+We will also create an IPv6 address on another router. This time we will enter the whole address:
+
+```json
+R2(config-if)#ipv6 address 2001:0BB9:AABB:1234:1111:2222:3333:4444/64
+```
+
+Notice that the IPv6 address is in the same subnet as the one configured on R1 **(2001:0BB9:AABB:1234/64)**. We can test the connectivity between the devices using _ping_ for IPv6:
+
+```json
+R1#ping ipv6 2001:0BB9:AABB:1234:1111:2222:3333:4444
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 2001:0BB9:AABB:1234:1111:2222:3333:4444, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 0/0/0 ms
+```
+
+As you can see from the output above, the devices can communicate with each other.
+
 ---
 
 ## RIPng
+
+**RIPng** is an extension of RIP developed for support of IPv6. Here are some of its features:
+
+- just like RIP for IPv4, it uses hop count as the metric
+- sends updates every 30 seconds
+- RIPng messages use the UDP port 521 and the multicast address of FF02::9
+
+The configuration of RIPng is requires at least two steps:
+
+1. enable RIPng using the global configuration command _ipv6 router rip tag_. The tag is used to differentiate between multiple RIP processes. It does not have to be the same on all routers in order to exchange routing information..
+2. enable the routing protocol on the interface using the _ipv6 rip tag enable_. The tag has to match the one used in the _ipv6 router rip tag_ command.
+
+Here is an example:
+
+![](https://drive.google.com/uc?export=view&id=1aSpwT9V6RwimE_tOQMwV-8pigDmbh-ed)
+
+We have done a similar configuration on the second router. To verify that routers are indeed exchanging route information using RIPng we can use the _show ipv6 route_ command:
+
+![](https://drive.google.com/uc?export=view&id=15YHpt-llvsV_U5JTw_dOsq32Jqz01ov5)
+
+In the picture above, we can see that the router has received a route to the network **2001:BBBB:CCCC:DDDD::/64**.
 
 ---
 
 ## Differences between IPv4 and IPv6
 
----
+The following table summarizes the major differences between IPv4 and IPv6:
+
+![](https://drive.google.com/uc?export=view&id=1uMj57mdw4GZnMVJuT1BMX94TyhnkPvci)

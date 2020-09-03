@@ -4,20 +4,160 @@ title: 'RIP'
 
 ## RIP overview
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+**RIP (Routing Information Protocol)** is one of the oldest distance vector routing protocols. It is usually used on small networks because it is very simple to configure and maintain, but lacks some advanced features of routing protocols like OSPF or EIGRP. Two versions of the protocol exists: version 1 and version 2. Both versions use hop count as a metric and have the administrative distance of 120. RIP version 2 is capable of advertising subnet masks and uses multicast to send routing updates, while version 1 doesn’t advertise subnet masks and uses broadcast for updates. Version 2 is backwards compatible with version 1.
+
+RIPv2 sends the entire routing table every 30 seconds, which can consume a lot of bandwidth. RIPv2 uses multicast address of 224.0.0.9 to send routing updates, supports authentication and triggered updates (updates that are sent when a change in the network occurs).
+
+For example of how RIP works, consider the following figure.
+
+![](https://drive.google.com/uc?export=view&id=1xf7ujE7PU6wDsifAguIsOA0H_lQKyTjB)
+
+Router R1 directly connects to the subnet 10.0.0.0/24. Network engineer has configured RIP on R1 to advertise the route to this subnet. R1 sends routing updates to R2 and R3. The routing updates list the subnet, subnet mask and metric for this route. Each router, R2 and R3, receives this update and adds the route to their respective routing tables. Both routers list the metric of 1 because the network is only one hop away.
+
+> **NOTE**
+Maximum hop count for a RIP route is 15. Any route with a higher hop count is considered to be unreachable.
+
 ---
 
 ## Configuring RIPv2
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+Configuring RIPv2 is a pretty straightforward process. Only three steps are required:
+
+1. enabling RIP by using the _router rip_ global configuration command
+2. instructing the router to use RIPv2 by typing the _version 2_ command
+3. telling RIP which networks to advertise by using one or more _network_ commands.
+
+The first two commands are easy to comprehend, but the last command requires a little bit more thought. With the _network_ command you specify which interfaces will participate in the routing process. This command takes a classful network as a parameter and enables RIP on the corresponding interfaces.Let’s configure our sample network to use RIP.
+
+![](https://drive.google.com/uc?export=view&id=1v0EzbhAj_-t0E6pC4xn7XqQihSJTrfJl)
+
+Router R1 and R2 have directly connected subnets. We want to include these subnets in the RIP routing process. To do that, we first need to enable RIP on both routers and then advertise these subnets using the network command.
+
+On router R1, in the global configuration mode, enter the router _rip_ command to enable RIP. In the RIP configuration mode, change the version of the protocol to 2 by using the _version 2_ command. Next, use the _network 10.0.0.0_ command to include the Fa0/1 interface on the router R1 in the routing process. Remember, the _network_ command takes a classful network number as a parameter, so in this case every interface that has an IP address that begins with 10 will be included in the RIP process (IP addresses that begins with 10 are, by default, the class A addresses and have the default subnet mask of 255.0.0.0). For instance, if another interface on the router had the IP address of 10.1.0.1 it would also be included in the routing process with the network command. You also need to include the link between the two routers in the RIP routing process. This is done by adding another network statement, network 172.16.0.0.
+
+So, the configuration on R1 should look like this:
+
+![](https://drive.google.com/uc?export=view&id=1AAvG5prtQWACKGDo3vaQvYqbBRpI1VdT)
+
+The configuration on R2 looks similar, but with different network number for the directly connected subnet:
+
+![](https://drive.google.com/uc?export=view&id=1cpOBb1bH7KS4EVYUFBM-Xd_0PitUltAN)
+
+You can verify that router R1 have a route to the R2’s directly connected subnet by typing the _show ip route_ command:
+
+![](https://drive.google.com/uc?export=view&id=1NwHWf6s-6N75Qd-Sd-g2Ny9qT4zcjLGR)
+
+The legend lists **R** for all RIP routes in the routing table. Also note that the administrative distance of 120 is shown, together with the metric of 1.
 
 ---
 
 ## passive-interface command
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+Consider the following example network with RIP turned on:
+
+![](https://drive.google.com/uc?export=view&id=1OwVwCwxbuJzCOcQts9SiwhPqXmtji_xQ)
+
+The RIP configuration on R2 looks like this:
+
+```json
+router rip
+ version 2
+ network 10.0.0.0
+ network 192.168.0.0
+```
+
+As we’ve already mentioned, the network command does two things:
+
+- advertises the defined network in RIP.
+- activates RIP on the interfaces whose addresses fall within the specified classful networks.
+
+So in the example network above, RIP will also be activated on the interface connected to the workstation on the right. This means that the workstation will also receive RIP updates, which is pointless. To prevent this from happening, the passive interface command is used:
+
+```json
+R2(config)#router rip
+R2(config-router)#passive-interface Gi0/1
+```
+
+Now, the RIP process will no longer send RIP updates out the Gi0/1 interface. However, all received RIP updates will be processed and the subnet 10.0.0.0/24 will still be advertised.
+
 ---
 
 ## RIP loop prevention
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+Distance vector protocols are susceptible to routing loops. Routing loops occur when a packet is continually routed through the same routers over and over again, in an endless circle. Because they can render a network unusable, distance vector routing protocols (such as RIP and EIGRP) employ several different mechanisms to prevent routing loops. We will describe them in this article.
+
+### Split Horizon
+
+Split horizon is one of the features of distance vector routing protocols that prevents routing loops. This feature prevents a router from advertising a route back onto the interface from which it was learned.
+
+Consider the following network topology:
+
+![](https://drive.google.com/uc?export=view&id=1ZQBHNbxs9h3lpv8ax-2FPBYEJxm1ng7X)
+
+Router R1 has a route to the subnet 10.0.1.0/24 that is advertised to router R2 by using RIP. Router R2 receives the update and stores the route in its routing table. Router R2 knows that the routing update for that route has come from R1, so it won’t advertise the route back to router R1. Otherwise, if the network 10.0.1.0/24 goes down, router R1 could receive a route to the subnet 10.0.1.0/24 from R2. Router R1 would think that R2 has the route to reach the subnet, and would send packets destinated for the 10.0.1.0/24 to R2. R2 would receive the packets from R1 and sends them back to R1, because R2 thinks that R1 has a route to reach the subnet, thereby creating a routing loop.
+
+### Route poisoning
+
+Route poisoning is another method for preventing routing loops employed by distance vector routing protocols. When a router detects that one of its directly connected routes has failed, it sends the advertisement for that route with an infinite metric (poisoning the route). A router that receives the update knows that the route has failed and doesn’t use it anymore.
+
+Consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1S6Zl9OPCoLG7PLpVBQAKnaPFAwy63TRG)
+
+Router R1 is directly connected to the 10.0.1.0/24 subnet. Router R1 runs RIP and the subnet is advertised to R2. When the R1’s Fa0/1 interface fails, the route advertisement is sent by R1 to R2 indicating that the route has failed. The route has a metric of 16, which is more than the RIP’s maximum hop count of 15, so R1 considers the route to be unreachable.
+
+### Holddown timer
+
+Holddown is another loop-prevention mechanism employed by distance vector routing protocol. This feature prevents a router from learning new information about a failed route. When a router receives the information about the unreachable route, the holddown timer is started. The router ignores all routing updates for that route until the timer expires (by default, 180 seconds in RIP). Only updates allowed during that period are updates sent from the router that originally advertised the route. If that router advertise the update, the holddown timer is stopped and the routing information is processed.
+
+An example will help you understand the concept better. Consider the following network topology.
+
+![](https://drive.google.com/uc?export=view&id=1dDzBbNurhka2US_jvmt9e87Vd2Orv0Va)
+
+Router R1 has advertised its directly connected subnet 10.0.1.0/24 through RIP. After some period of time, the interface Fa0/1 on R1 fails and the router R1 sends the poisoned route to R2. R2 receives the routing update, marks the route as unreachable and starts the holddown timer. During that time all updates from any other routers about that route are ignored to prevent routing loops. If interface Fa0/1 on R1 comes back up, R1 again advertises the route. R2 process that update even if the holddown timer is still running, because the update is sent by the same router that originally advertised the route.
+
+![](https://drive.google.com/uc?export=view&id=1_55GG2FSk_3whJegtAXw448o3a2dJtNh)
+
 ---
 
 ## Advertise default routes using RIP
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+Consider the following example network:
+
+![](https://drive.google.com/uc?export=view&id=1crRIIY4CFQTkBk1v-BCAKjdG1Yc0xeoU)
+
+In the network above we have three routers running RIP. Router R3 is connected to the ISP’s internet router and and has a static default route that points to it. It is possible to advertise that default route using RIP to other routers in the local network. On R3, we simply need to enter the default-information originate command in the RIP configuration mode.
+
+Here is the configuration on R3:
+
+```json
+R3(config)#ip route 0.0.0.0 0.0.0.0 50.50.50.1
+R3(config)#router rip
+R3(config-router)#default-information originate
+```
+
+R1 and R2 don’t need any additional configuration – they learn the default route just like any other RIP route:
+
+```json
+R1#show ip route rip
+R*   0.0.0.0/0 [120/1] via 10.0.0.1, 00:00:04, GigabitEthernet0/0
+```
+
+As you can see from the output above, R1 learned about the default route via RIP. The route is marked with an asterisk (*), indicating that the route is a candidate to be the default route.
 
 ---

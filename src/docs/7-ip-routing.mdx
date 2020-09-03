@@ -4,16 +4,186 @@ title: 'IP Routing'
 
 ## What is IP routing?
 
+**IP routing** is the process of sending packets from a host on one network to another host on a different remote network. This process is usually done by routers. Routers examine the destination IP address of a packet , determine the next-hop address, and forward the packet. Routers use routing tables to determine the next hop address to which the packet should be forwarded.
+
+Consider the following example of IP routing:
+
+![](https://drive.google.com/uc?export=view&id=198yTHpSQXHQISOWnSY5FMjIuxCgR4Smy)
+
+Host A wants to communicate with host B, but host B is on another network. Host A is configured to send all packets destined for remote networks to router R1. Router R1 receives the packets, examines the destination IP address and forwards the packet to the outgoing interface associated with the destination network.
+
+### Default gateway
+
+A default gateway is a router that hosts use to communicate with other hosts on remote networks. A default gateway is used when a host doesn’t have a route entry for the specific remote network and doesn’t know how to reach that network. Hosts can be configured to send all packets destined to remote networks to the default gateway, which has a route to reach that network.
+
+The following example explains the concept of a default gateway more thoroughly.
+
+![](https://drive.google.com/uc?export=view&id=1LjLBO4DazDK9S0A6Z00lhWANMpIa7wlW)
+
+Host A has an IP address of the router R1 configured as the default gateway address. Host A is trying to communicate with host B, a host on another, remote network. Host A looks up in its routing table to check if there is an entry for that destination network. If the entry is not found, the host sends all data to the router R1. Router R1 receives the packets and forwards them to host B.
+
+### Routing table
+
+Each router maintains a routing table and stores it in RAM. A routing table is used by routers to determine the path to the destination network. Each routing table consists of the following entries:
+
+- **network destination and subnet mask** – specifies a range of IP addresses.
+- **remote router** – IP address of the router used to reach that network.
+- **outgoing interface** – outgoing interface the packet should go out to reach the destination network.
+
+There are three different methods for populating a routing table:
+
+- directly connected subnets
+- using static routing
+- using dynamic routing
+
+Each of this method will be described in the following chapters.
+
+Consider the following example. Host A wants to communicate with host B, but host B is on another network. Host A is configured to send all packets destined for remote networks to the router. The router receives the packets, checks the routing table to see if it has an entry for the destination address. If it does, the router forwards the packet out the appropriate interface port. If the router doesn’t find the entry, it discards the packet.
+
+![](https://drive.google.com/uc?export=view&id=1RjsumieHud7TgbA0P6lWNJAV4lj0mxL5)
+
+We can use the _show ip route_ command from the enabled mode to display the router’s routing table.
+
+![](https://drive.google.com/uc?export=view&id=1yEyK4WXiripd2QsBqGmLowoAanrc4Uef)
+
+As you can see from the output above, this router has two directly connected routes to the subnets 10.0.0.0/8 and 192.168.0.0/24. The character C in the routing table indicates that a route is a directly connected route. So when host A sends the packet to host B, the router will look up into its routing table and find the route to the 10.0.0.0/8 network on which host B resides. The router will then use that route to route packets received from host A to host B.
+
 ---
 
 ## Connected, static & dynamic routes
+
+Let’s explain the types of routes that can be found in a router’s routing table.
+
+### Connected routes
+
+Subnets directly connected to a router’s interface are added to the router’s routing table. Interface has to have an IP address configured and both interface status codes must be in the **up and up** state. A router will be able to route all packets destined for all hosts in subnets directly connected to its active interfaces.
+
+Consider the following example. The router has two active interfaces, Fa0/0 and Fa0/1. Each interface has been configured with an IP address and is currently in the up-up state, so the router adds these subnets to its routing table.
+
+![](https://drive.google.com/uc?export=view&id=1RnlYxgLdHcoMMlZu_6vh35cHRhE6Oolc)
+
+![](https://drive.google.com/uc?export=view&id=1K5pIBiBjpLCoLU-jfoWHxsztSJOYZCDK)
+
+As you can see from the output above, the router has two directly connected routes to the subnets 10.0.0.0/8 and 192.168.0.0/24. The character **C** in the routing table indicates that a route is a directly connected route.
+
+> **NOTE**
+You can see only connected routes in a router’s routing table by typing the _show ip route connected_ command.
+
+### Static routes
+
+By adding static routes, a router can learn a route to a remote network that is not directly connected to one of its interfaces. Static routes are configured manually by typing the global configuration mode command *ip route DESTINATION_NETWORK SUBNET_MASK NEXT_HOP_IP_ADDRESS*. This type of configuration is usually used in smaller networks because of scalability reasons (you have to configure each route on each router).
+
+A simple example will help you understand the concept of static routes.
+
+![](https://drive.google.com/uc?export=view&id=1L5-cGpM8B7GxdaPSxOpdqS9poora__My)
+
+Router A is directly connected to router B. Router B is directly connected to the subnet 10.0.1.0/24. Since that subnet is not directly connected to Router A, the router doesn’t know how to route packets destined for that subnet. However. you can configure that route manually on router A.
+
+First, consider the router A’s routing table before we add the static route:
+
+![](https://drive.google.com/uc?export=view&id=1sWOdbSp_f5YLPB_kWx3vAN9XXoPM_5TH)
+
+Now, we’ll use the _static route_ command to configure router A to reach the subnet 10.0.0.0/24. The router now has the route to reach the subnet.
+
+![](https://drive.google.com/uc?export=view&id=1UpaISNjoKcKaRmXZ3SjJpYsp4xzGHofF)
+
+The character **S** in the routing table indicates that a route is a statically configured route.
+
+Another version of the _ip route_ command exists. You don’t have to specify the next-hop IP address. You can rather specify the exit interface of the local router. In the example above we could have typed the *ip route DEST_NETWORK NEXT_HOP_INTERFACE* command to instruct router A to send all traffic destined for the subnet out the right interface. In our case, the command would be _ip route 10.0.0.0 255.255.255.0 Fa0/0_.
+
+### Dynamic routes
+
+A router can learn dynamic routes if a routing protocol is enabled. A routing protocol is used by routers to exchange routing information with each other. Every router in the network can then use information to build its routing table. A routing protocol can dynamicaly choose a different route if a link goes down, so this type of routing is fault-tolerant. Also, unlike with static routing, there is no need to manually configure every route on every router, which greatly reduces the administrative overhead. You only need to define which routes will be advertised on a router that connect directly to the corresponding subnets – routing protocols take care of the rest.
+
+The disadvantage of dynamic routing is that it increases memory and CPU usage on a router, because every router has to process received routing information and calculate its routing table.
+
+To better understand the advantages that dynamic routing procotols bring, consider the following example:
+
+![](https://drive.google.com/uc?export=view&id=1H_3WJNqJSmhJ4_-2AZY85c-gdH3DNuci)
+
+Both routers are running a routing protocol, namely EIGRP. There is no static routes on Router A, so R1 doesn’t know how to reach the subnet 10.0.0.0/24 that is directly connected to Router B. Router B then advertises the subnet to Router A using EIGRP. Now Router A has the route to reach the subnet. This can be verified by typing the _show ip route_ command:
+
+![](https://drive.google.com/uc?export=view&id=1QdY3yWKzqdeQ_9nMODrcGIjX1FHKY--y)
+
+You can see that Router A has learned the subnet from EIGRP. The letter **D** in front of the route indicates that the route has been learned through EIGRP. If the subnet 10.0.0.0/24 fails, Router B can immediately inform Router A that the subnet is no longer reachable.
 
 ---
 
 ## Administrative distance & metric
 
+### Administrative distance
+
+A network can use more than one routing protocol, and routers on the network can learn about a route from multiple sources. Routers need to find a way to select a better path when there are multiple paths available. Administrative distance number is used by routers to find out which route is better (lower number is better). For example, if the same route is learned from RIP and EIGRP, a Cisco router will choose the EIGRP route and stores it in the routing table. This is because EIGRP routes have (by default) the administrative distance of 90, while RIP route have a higher administrative distance of 120.
+
+You can display the administrative distance of all routes on your router by typing the _show ip route_ command:
+
+![](https://drive.google.com/uc?export=view&id=1OQge3OCFUuU5X9kzsv9dU2-xOttobMTp)
+
+In the case above, the router has only a single route in its routing table learned from a dynamic routing protocols – the EIGRP route.
+
+The following table lists the administrative distance default values:
+
+![](https://drive.google.com/uc?export=view&id=1ZxY9meeNKs7leyIwFleRtAGKeim_yRjb)
+
+### Metric
+
+If a router learns two different paths for the same network from the same routing protocol, it has to decide which route is better and will be placed in the routing table. Metric is the measure used to decide which route is better (lower number is better). Each routing protocol uses its own metric. For example, RIP uses hop counts as a metric, while OSPF uses cost.
+
+The following example explains the way RIP calculates its metric and why it chooses one path over another.
+
+![](https://drive.google.com/uc?export=view&id=1orfU95biwmMhsS7p7q7J3FGDQaQSdhI_)
+
+RIP has been configured on all routers. Router 1 has two paths to reach the subnet 10.0.0.0/24. One path is goes through Router 2, while the other path goes through Router 3 and then Router 4. Because RIP uses the hop count as its metric, the path through Router 1 will be used to reach the 10.0.0.0/24 subnet. This is because that subnet is only one router away on the path. The other path will have a higher metric of 2, because the subnet is two routers away.
+
+> **NOTE**
+The example above can be used to illustrate a disadvantage of using RIP as a routing protocol. Imagine if the first path through R2 was the 56k modem link, while the other path (R3-R4) is a high speed WAN link. Router R1 would still chose the path through R2 as the best route, because RIP uses only the hop count as its metric.
+
+The following table lists the parameters that various routing protocols use to calculate the metric:
+
+![](https://drive.google.com/uc?export=view&id=1aVE3twDIPbH_X0NAkEo7xGqcfV1Vmdd3)
+
 ---
 
 ## Routing protocols
 
----
+Dynamic routes are routes learned via routing protocols. Routing protocols are configured on routers with the purpose of exchanging routing information. There are many benefits of using routing protocols in your network, such as:
+
+- unlike static routing, you don’t need to manually configure every route on each router in the network. You just need to configure the networks to be advertised on a router directly connected to them.
+- if a link fails and the network topology changes, routers can advertise that some routes have failed and pick a new route to that network.
+
+### Types of routing protocols
+
+There are two types of routing protocols:
+
+1. Distance vector (RIP, IGRP)
+2. Link state (OSPF, IS-IS)
+
+Cisco has created its own routing protocol – EIGRP. EIGRP is considered to be an advanced distance vector protocol, although some materials erroneously state that EIGRP is a hybrid routing protocol, a combination of distance vector and link state.
+
+All of the routing protocols mentioned above are interior routing protocols (IGP), which means that they are used to exchange routing information within one autonomous system. BGP (Border Gateway Protocol) is an example of an exterior routing protocol (EGP) which is used to exchange routing information between autonomous systems on the Internet.
+
+### Distance vector protocols
+
+As the name implies, distance vector routing protocols use distance to determine the best path to a remote network. The distance is something like the number of hops (routers) to the destination network.
+
+Distance vector protocols usually send the complete routing table to each neighbor (a neighbor is directly connected router that runs the same routing protocol). They employ some version of Bellman-Ford algorithm to calculate the best routes. Compared with link state routing protocols, distance vector protocols are easier to configure and require little management, but are susceptible to routing loops and converge slower than the link state routing protocols. Distance vector protocols also use more bandwidth because they send complete routing table, while the link state procotols send specific updates only when topology changes occur.
+
+RIP and EIGRP are examples of distance vector routing protocols.
+
+### Link state protocols
+
+Link state routing protocols are the second type of routing protocols. They have the same basic purpose as distance vector protocols, to find a best path to a destination, but use different methods to do so. Unlike distance vector protocols, link state protocols don’t advertise the entire routing table. Instead, they advertise information about a network toplogy (directly connected links, neighboring routers…), so that in the end all routers running a link state protocol have the same topology database. Link state routing protocols converge much faster than distance vector routing protocols, support classless routing, send updates using multicast addresses and use triggered routing updates. They also require more router CPU and memory usage than distance-vector routing protocols and can be harder to configure.
+
+Each router running a link state routing protocol creates three different tables:
+
+- neighbor table – the table of neighboring routers running the same link state routing protocol.
+- topology table – the table that stores the topology of the entire network.
+- routing table – the table that stores the best routes.
+
+Shortest Path First algorithm is used to calculate the best route. OSPF and IS-IS are examples of link state routing protocols.
+
+### Difference between distance vector and link state routing protocols
+
+The following table summarizes the differences:
+
+![](https://drive.google.com/uc?export=view&id=123-CU5EwYkV-FTuNCkwJId0hciep_9jJ)

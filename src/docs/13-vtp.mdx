@@ -4,12 +4,116 @@ title: 'VTP'
 
 ## What is VTP?
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+**VTP (VLAN Trunking Protocol)** is a Cisco proprietary protocol used by Cisco switches to exchange VLAN information. With VTP, you can synchronize VLAN information (such as VLAN ID or VLAN name) with switches inside the same VTP domain. A VTP domain is a set of trunked switches with the matching VTP settings (the domain name, password and VTP version). All switches inside the same VTP domain share their VLAN information with each other.
+
+To better understand the true value of VTP, consider an example network with 100 switches. Without VTP, if you want to create a VLAN on each switch, you would have to manually enter VLAN configuration commands on every switch! VTP enables you to create the VLAN only on a single switch. That switch can then propagate information about the VLAN to every other switch on the network and cause other switches to create it. Likewise, if you want to delete a VLAN, you only need to delete it on one switch, and the change is automatically propagated to every other switch inside the same VTP domain.
+
+The following network topology explains the concept more thoroughly:
+
+[](https://drive.google.com/uc?export=view&id=1-iu85BXvbJXbCljy7eeftIRodPddgWFA)
+
+On SW1, we have created a new VLAN. SW1 sends a VTP update about the new VLAN to SW2, which in turn sends its VTP update to SW3. These updates will cause SW2 and SW3 to create the same VLAN. You can see how this simplifies network administration – the engineer only had to log in and create the VLAN on the first switch. Other switches have created the same VLAN automatically.
+
+> **NOTE**
+VTP does not advertise information about which switch ports are assigned to which VLAN.
+
+Three VTP versions are available – V1, V2, and V3. The first two versions are similar except that V2 adds support for token ring VLANs. V3 adds the following features:
+
+- enhanced authentication
+- support for extended VLANs (1006 to 4094). VTP versions 1 and 2 can propagate only VLANs 1 to 1005.
+- support for private VLAN
+- VTP primary server and VTP secondary servers
+- VTP mode off that disables VTP
+- backward compatibility with VTP V1 and V2
+- the ability to be configured on a per-port basis
+
 ---
 
 ## VTP modes
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+Each switch can use one of four different VTP modes:
+
+- **VTP client mode** – a switch using this mode can’t change its VLAN configuration. That means that a VTP client switch cannot create or delete VLANs. However, received VTP updates are processed and forwarded.
+- **VTP server mode** – a switch using this mode can create and delete VLANs. A VTP server switch will propagate VLAN changes. This is the default mode for Cisco switches.
+- **VTP transparent mode** – a switch using this mode doesn’t share its VLAN database, but it forwards received VTP advertisements. You can create and delete VLANs on a VTP transparent switch, but these changes will not be sent to other switches.
+- **VTP mode off** – similar to VTP transparent mode, with a difference that a switch using this mode will not forward received VTP updates. This command is supported only in VTP V3.
+
+As mentioned above, all switches are configured as VTP servers by default. This is fine in smaller networks without too many VLANs and VLAN changes, since all VLAN information can easily be stored in each switch’s NVRAM. However, in larger networks, it is recommended to specify a couple of higher-quality switches to serve as VTP servers. All other switches in the network should be set up as VTP clients.
+
+Consider the following example:
+
+[](https://drive.google.com/uc?export=view&id=1vgdMaAKcxl7ok_iZ_SCwpWUBytXnqN2N)
+
+We have a simple network of three switches. SW1 is configured as VTP server. After the VLAN 5 is created on SW1, this switch will notify the connected switch (SW2) about the created VLAN. SW2 will receive the update but, since it uses the VTP transparent mode, it will not create this VLAN in its configuration. However, it will forward the VTP update to SW3. Since SW3 is configured as VTP client, it will process the update and create VLAN 5.
 
 ---
 
 ## VTP configuration
 
----
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+We’ve already learned that using VTP makes it is possible to make configuration changes on one or more switches and have those changes automatically advertised to all the other switches in the same VTP domain. In a typical network some switches are configured as VTP servers and other switches are configured as VTP clients. A VLAN created on a VTP server switch is automatically advertised to all switches inside the same VTP domain.
+ 
+> **NOTE**
+With VTP V1 and V2 it is not possible to completely disable VTP on Cisco switches; the best you can do is to place the switch in the VTP transparent mode. VTP V3 adds the **mode off** option which effectively disables VTP. This article describes the configuration of VTP V1 or V2.
+
+To exchange VTP messages, five requirements must be met:
+
+1. a switch has to be configured as either a VTP server or VTP client
+2. the VTP domain name has to be the same on both switches
+3. if present, the VTP domain password has to be the same
+4. VTP versions have to match
+5. the link between the switches has to be a trunk link
+
+Consider the following example network:
+
+[](https://drive.google.com/uc?export=view&id=1phBTYFO8nCyK7hQ-IeiQ4xQ2beukTJnM)
+
+We have a network of three switches connected via trunk links. On SW1, we will configure the VTP domain name using the _vtp domain NAME_ command and VTP password using the _vtp password PASSWORD_ commands:
+
+[](https://drive.google.com/uc?export=view&id=1sHFLyAxKG2Y2aYa1OEeuV4P0m2KyiL7W)
+
+> **NOTE**
+The default VTP mode on Cisco switches is the server mode, so the command _vtp mode server_ wasn’t necessary in the SW1 configuration pictured above.
+
+Now we need to configure SW2 and SW3 as VTP clients. We can do it using the following set of commands:
+
+[](https://drive.google.com/uc?export=view&id=1HrUb2GC3tFpDeSWYXsvVy2eAc3b8ZLGi)
+
+[](https://drive.google.com/uc?export=view&id=1wmiWdfTizmc2zAtGjO2B7-scfg3nUGQL)
+
+Now, when we create a new VLAN on SW1, the VTP will be sent to SW2 and SW3 and the new VLAN will be created automatically on SW2 and SW3:
+
+[](https://drive.google.com/uc?export=view&id=1Rrf2wz-6Bq_iaqTGoza0qvup0qp-fFN6)
+
+On SW1, we will create a new VLAN:
+
+[](https://drive.google.com/uc?export=view&id=1c7bDg7j8Xbu-GUvxVevTEJltSWcVpIur)
+
+SW2 and SW3 will create the VLAN 30 automatically. We can use the _show vlan_ command on both switches to verify this:
+
+SW2:
+
+[](https://drive.google.com/uc?export=view&id=1UfcTAo8K2xdwoRj6KJEDtA_E6mOljnnR)
+
+SW3:
+
+[](https://drive.google.com/uc?export=view&id=14lrMx5K078ylZuPaBpQPA-Ya30lYEU9a)
+
+To display the VTP configuration information, we can use the _show vtp status_ command:
+
+[](https://drive.google.com/uc?export=view&id=1GZyDYvYeEwoguWFl__yJXf5eF2c9kW3N)
+
+The most important field listed in the output above is the **Configuration Revision** number.  This number indicates the level of revision for a VTP packet. Each device tracks the VTP configuration revision number that is assigned to it. This information is used in order to determine whether the received information is more recent than the current version.
+
+Each time you make a VLAN change on a VTP server, the configuration revision number is incremented by one and a VTP advertisement is sent. The switch that receives a VTP packet compares the configuration revision to its own revision. If the configuration revision number in the received VTP advertisement is higher than its own revision number, the switch will overwrite its VLAN configurations with the new information that is being advertised.
+
+> **NOTE**
+It is important to check a new switch’s VTP configuration revision number before adding it to your network. If the revision number on the new switch is higher than the current revision number of other switches on the network, all current VLANs could be deleted!

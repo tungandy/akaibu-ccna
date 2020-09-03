@@ -4,52 +4,459 @@ title: 'Cisco IOS'
 
 ## Cisco IOS overview
 
+**IOS (Internetwork Operating System)** is a multitasking operating system used on most Cisco routers and switches. IOS has a command-line interface with the predetermined number of multiple-word commands. This operating system is used to configure routing, switching, internetworking and other features supported by a Cisco device.
+
+> **NOTE**
+Previous versions of Cisco switches ran CatOS, a discounted version of a CLI-based operating sytem.
+
+Below you can see how IOS looks like when a Cisco device is started for the first time:
+
+![](https://drive.google.com/uc?export=view&id=1jm71OJoIHJm8MgSOW0F6AZYea-cRYBsH)
+
+### Accessing the IOS
+
+There are three most common ways to access the IOS:
+
+**Console access** – this type of access is usually used to configure newly acquired devices. These devices usually don’t have an IP address configured, and therefore can not be accessed through the network. Most of the Cisco devices have a physical console port. This port can be connected to a computer using a rollover cable, a special type of cable with pins on one end reversed on the other end of the cable. The rollover cable is a serial cable, which means that you can’t just plug it in an Ethernet port on your computer. You will need an adapter that converts an interface on your computer (usually a 9-pin serial interface) into RJ-45.
+
+> **NOTE**
+Newer Cisco devices usually include a USB console port, since serial ports are rare on modern PCs.
+
+**Telnet access** – this type of access used to be a common way to access network devices. Telnet is an terminal emulation program that enables you to access IOS through the network and configure the device remotely. The device that is being configured needs to have an Telnet server installed and an IP address configured.
+
+Telnet uses a well known TCP port 23. One of the biggest disadvantages of this protocol is that is sends all data as clear-text, which includes the passwords! This is the reason why this type of access is usually not used anymore. Instead, SSH is usually used.
+
+**SSH access** – like Telnet, this access type enables you to configure devices remotely, but it adds an extra layer of security by encrypting all communications using public-key cryptography. SSH uses well known TCP port 22. 
+
+### IOS modes
+
+IOS has many different modes. There are three main modes any many submodes. We will describe the three main modes and one submode.
+
+- **user EXEC mode** – the default mode for the IOS CLI. This is the mode that a user is placed in after accessing the IOS. Only basic commands (like ping or telnet) are available in this mode.
+- **privileged EXEC Mode** – this mode is accessed by typing the _enable_ command from the user EXEC mode. This mode can be password protected. In this mode a user can view and change a device’s configuration.
+- **global configuration mode** – this mode can be accessed by typing the _configure terminal_ command from the privileged EXEC mode. It is used to change the device’s configuration.
+
+A global configuration mode can have many submodes. For example, when a user wants to configure an interface, he will have to enter the interface submode by entering the *interface INTERFACE_TYPE INTERFACE_NUMBER* command (e.g. *interface FastEthernet 0/1* ) from the global configuration mode. This submode can have many commands that are specific for the interface.
+
+Let’s describe each of the modes mentioned above in more detail.
+
 ---
 
 ## Power on a Cisco device
+
+When you first power-on a newly purchashed Cisco device, it will perform a **power-on self-test (POST)** to discover the hardware components and verify that all components work properly. If the POST is successful, the device will enter the **setup mode**. This mode presents a step-by-step dialog to help you configure some basic parameters, such as the device hostname, passwords, interface IP address, etc. To enter the **setup mode**, power on your device and type **yes** when prompted to make a selection:
+
+![](https://drive.google.com/uc?export=view&id=1ivWZL0DBZaoNN_faJcQT8wwMBqVjacmn)
+
+The wizard guides you through the initial configuration of your device and will create an initial configuration file. The setup mode is useful when you are unfamiliar with the IOS CLI, but once you learn the basics of CLI, you probably won’t use this mode ever again.
+
+> **NOTE**
+You can enter the setup mode at any time from the command line by typing the **setup** command from the privileged mode. To exit the setup mode without saving any changes, press CRTL+C.
 
 ---
 
 ## IOS command modes
 
+We’ve already learned that IOS has three main command modes: the user exec, privileged exec, and the global configuration modes. Each of these modes serves a different purpose and has its own set of commands. In this lesson we will describe each of this modes in more detail.
+
+### User EXEC mode commands
+
+Initially, a user logs into the User Exec mode. This is the mode with the least number of commands. You can get a list of all available commands by typing the character **?**.
+
+![](https://drive.google.com/uc?export=view&id=19Elo3E3UOE1myxFbUZU74uiKZ6QcmbhV)
+
+As you can see, most of the commands available are used to show statistics and perform some basic troubleshooting. The prompt on the left side of the screen always displays the device hostname (R1 in this case), followed by the character >.
+
+All commands can be abbreviated to their first letters of the command name. For example, you can abbreviate **ping** by typing **pin**, because no other command in the User EXEC mode IOS mode begins with these letters.
+
+### Privileged EXEC mode commands
+
+This IOS mode is also called enable mode because you must enter the enable command from a user EXEC mode if you want to access this mode. You can use more commands in the privileged EXEC mode than you were able to use in the user EXEC mode. You can save a device configuration or reload a device in this mode. You can also enter a third mode, the configuration mode. The access to the privileged EXEC mode is usually protected with a password.
+
+The prompt for this mode shows # after the device hostname.
+
+![](https://drive.google.com/uc?export=view&id=1OFghSPCF-fh5wqWaxobkEymto4LUyqfI)
+
+### Global configuration mode commands
+
+To change a device configuration, you need to enter the global configuration mode. This mode can be accessed by typing configure terminal (or conf t, the abbreviated version of the command) from the enable mode. The prompt for this mode is *hostname***(config)**.
+
+Global configuration mode commands are used to configure a device. You can set a hostname, configure authentication, set an IP address for an interface, etc. From this mode you can also access submodes, for example the interface mode, from where you can configure interface options.
+
+You can get back to a privileged EXEC mode by typing the *end* command. You can also type CTRL + C to exit the configuration mode.
+
+![](https://drive.google.com/uc?export=view&id=1Mm3fhXXGtqW-pk0h9r94NKdXI1D_VY3T)
+
+### Submode commands
+
+A global configuration mode contains many submodes. For example, if you want to configure an interface you have to enter that interface configuration mode. Each submode contains only commands that pertain to the resource that is being configured.
+
+To enter the interface configuration mode you need to specify which interface you would like to configure. This is done by using the *interface INTERFACE_TYPE/INTERFACE_NUMBER* global configuration command, where *INTERFACE_TYPE* represents the type of an interface (Ethernet, FastEthernet, Serial…) and *INTERFACE_NUMBER* represents the interface number, since CIsco devices usually have more than one physical interface. Once inside the interface configuration mode, you can get a list of available commands by typing the “?” character. Each submode has its own prompt. Notice how the command prompt was changed to **Router(config-if)** after I’ve entered the interface submode:
+
+![](https://drive.google.com/uc?export=view&id=1HTpA_60w0mknP0or-3qTyvlLFr9qNENa)
+
 ---
 
 ## Get help in IOS
+
+You can use the question mark to display a list of commands available in the prompt you are in:
+
+![](https://drive.google.com/uc?export=view&id=1thA4oS2Yx5073Vr1xIpzQj2DNWRE7vfV)
+
+If the output spans more than one page, press the **spacebar** to display the following page of commands, or press **Enter** to go one command at a time. To quit the output, press **q**.
+
+To display only commands that start with a particular character or a string of characters, type the letters and then press the question mark:
+
+![](https://drive.google.com/uc?export=view&id=1Cp6fP1iza8tpqw2z-8gM97w-PdvZosha)
+
+In the picture above you can see that we’ve displayed all commands that start with **de**.
+
+If the command is more than one word long, you can use the question mark to display the next command in a string:
+
+![](https://drive.google.com/uc?export=view&id=1rHXCHp57i_11jXm9hodRH1a6EXHm4o9Z)
+
+In the picture above you can see that we’ve displayed all commands that can follow the command **debug**. We then displayed all commands that can follow the commands **debug eigrp**.
+
+You can also autocomplete a command. Just type the first few characters and press **Tab**. If there is only a single match, IOS will complete the command.
+
+You don’t have to type an entire word to finish a command. Just can type just the first letter or a couple of letters, and if there is only a single match, IOS will understand what are you trying to accomplish. For example, you can type **sh ip int b** instead of a longer version, **show ip interface brief**:
+
+![](https://drive.google.com/uc?export=view&id=13XaFFKUP0qRWlXDQuxlE-iXlPCRBaQ1C)
+
+Note that we were able to execute the command above because each set of characters had only one match in the list of commands. If we’ve typed **sh ip in b instead**, IOS would not have understood our intention:
+
+![](https://drive.google.com/uc?export=view&id=1CWWdazw6HXjXEL7viGWlWAr5gHNVH6mi)
+
+The **% Ambiguous command: “show ip in b”** message was displayed because the third keyword, **in**, has more than one meaning (**inspect** or **interface**).
 
 ---
 
 ## Running & startup configuration
 
+Cisco devices store commands in two configuration files:
+
+- startup configuration
+- running configuration
+
+Immediately after you type a command in the global configuration mode, it will be stored in the running configuration. A running configuration resides in a device’s RAM, so if a device loses power, all configured commands will be lost.
+
+To avoid this scenario, you need to copy your current configuration into the startup configuration. A startup configuration is stored in the nonvolatile memory of a device, which means that all configuration changes are saved even if the device loses power.
+
+To copy your running configuration into the startup configuration you need to type the command _copy running-configuration startup-configuration_.
+
+![](https://drive.google.com/uc?export=view&id=1759ukM_I7hZSYL7AFt2KRmKSjgq-naAW)
+
 ---
 
 ## IOS basic commands
+
+In this article we will go through some basic IOS commands.
+
+### Hostname command
+
+The _hostname_ command is used to configure the device hostname. Because this command changes a device configuration, it must be entered in the global configuration mode. After typing the command, the prompt will change and display the new hostname.
+
+Here is an example that shows you how to change a hostname of a device.
+
+First, enter the global configuration mode by typing the _enable_ command in the user EXEC mode and the _configuration terminal_ command in the privileged EXEC mode. Once inside the global configuration mode, type the command _hostname R1_. Notice how the prompt was changed to reflect the configured value.
+
+![](https://drive.google.com/uc?export=view&id=19MEeDybk_afKJTmAjFk3H969aET1R2nw)
+
+### No shutdown command
+
+By default, all interfaces on a Cisco router are turned off. To enable an interface, the _no shutdown_ command is used. You first need to enter the submode of the interface that you want to configure. You can do that by using the global configuration mode command _interface INTERFACE_TYPE/ INTERFACE_NUMBER_. You can get a list of available interfaces by typing the ‘?’ character after the interface command.
+
+You may notice that the promt has changed to reflect the mode you are currently in. For the interface mode the _HOSTNAME#(config-if)_ prompt is shown.
+
+Once inside the interface mode, you can enable an interface by typing the _no shutdown_ command.
+
+![](https://drive.google.com/uc?export=view&id=1rRgr6bmls6fJs-Pn2iimqIHFu3rdzezS)
+
+### IP address command
+
+The ip address interface mode command is used to assign an IP address to an interface. The syntax of this command is ip address *IP_ADDRESS SUBNET_MASK*. For example, if we want to assign an IP address of **10.0.0.1** with the subnet mask **255.0.0.0** to a interface, we would use the following command:
+
+```json
+ip address 10.0.0.1 255.0.0.0
+```
+ 
+What if you had made a mistake and written the _ip address 10.0.0.2 255.0.0.0_ command instead of the command above? Well, you can remove the wrong IP address by typing the same command, but this time with the _no_ keyword in front of it, in our case _no ip address_. You can remove any command from your IOS configuration by using the _no_ keyword in front of the command.
+
+![](https://drive.google.com/uc?export=view&id=1pbQ3_9FZ1ch9DfGlVE-uZMqHvM8O5haf)
+
+### Setting up passwords
+
+Each Cisco IOS device has the built-in authentication features. There are three basic ways to configure authentication on a device:
+
+- **Configure a password for the console access** – by default, the console access doesn’t requires a password. You can configure a password for the console access by using the following set of commands:
+
+```json
+HOSTNAME(config) line console 0
+HOSTNAME(config-line) password PASSWORD 
+HOSTNAME(config-line) login
+```
+
+This will force a user to type the password when trying to access the device through the console port.
+
+![](https://drive.google.com/uc?export=view&id=1Jc9OkmJ85gbjsULTHcmKStbgATPCz8Ey)
+
+- **Configure a password for the telnet access** – by default, the telnet access is disabled. You need to enable it. This is done using the following sequence of commands:
+
+```json
+HOSTNAME(config) line vty FIRST_VTY LAST_VTY
+HOSTNAME(config-line) password PASSWORD
+HOSTNAME(config-line) login
+```
+
+The first command defines a range of virtual terminal sessions that you would like to configure. A virtual session can be a telnet or SSH session. Cisco devices usually supports 16 concurrent VTY sessions. So, this command usually looks like this: _line vty 0 15_.
+
+The _login_ command allows a remote access to a device. It is required in order for telnet to work.
+
+![](https://drive.google.com/uc?export=view&id=16G_qfsQQon0ESso3WmE6a-e0leYKEaiz)
+
+- **Configure a password for the privileged EXEC mode** – from the privileged EXEC mode you can enter the global configuration mode and change the configuration of a device. Therefore it is important to prevent an unauthorized user from entering the global configuration mode. You can do that by setting up a password to enter the privileged EXEC mode. This can be done in two ways:
+
+```json
+HOSTNAME(config) enable password PASSWORD
+HOSTNAME(config) enable secret PASSWORD
+```
+
+Both of the commands above accomplish the same thing, but with one major difference. The _enable secret PASSWORD_ commands encrypts the password, while the _enable password PASSWORD_ command doesn’t, which means that an unauthorized user could just read a password from the device configuration:
+
+![](https://drive.google.com/uc?export=view&id=1azk1paV9qsCiugqYTI8z7uKVoRmGBpLR)
+
+Notice how the password (_cisco_) is visible in the device’s configuration.
+
+### Service password-encryption command
+
+By default,  passwords configured using the enable password command and passwords for the console or telnet access are stored in clear text in the configuration file. This presents a security risk because an attacker could easily find out passwords. The global configuration _service password-encryption_ command encrypts all passwords configured.
+
+It is important to note that this type of password encryption is not consider especially secure, since the algorithm used can be easily cracked. Cisco recommends using this command only with additional security measures.
+
+### Configuring banners
+
+You can display a banner on a Cisco device. A banner is usually shown before the login prompt. It is usually some text that appears on the screen when a user connect to the device (e.g. some legal information).
+
+The most commonly used banner is the **Message Of The Day (MOTD)** banner. This banner, if configured, is shown before the login prompt to every user that is trying to establish a session with the device. The following global configuration command is used to configure a MOTD banner:
+
+```json
+hostname(config) banner motd DELIMITING_CHARACTER TEXT DELIMITING_CHARACTER
+```
+
+A delimiting character is a character of your choice. Its purpose is to signify the start and end of a text that will appear in the banner. For example, the command _banner motd # Unauthorized access forbidden! #_ will show the following text: **Unauthorized access forbidden!**.
+
+![](https://drive.google.com/uc?export=view&id=1RE6TRoGtrJx054Z1Jdbl0U0PCEAatDU7)
+
+### Show version command
+
+The _show version command_ is used to display information about a Cisco device. The command can be entered in both the user EXEC and privileged EXEC mode. By using this command you can find out many useful information about your Cisco device, such as:
+
+- Software Version – IOS software version
+- System up-time – time since last reboot
+- Software image name – IOS filename stored in flash
+- Hardware Interfaces – interfaces available on device
+- Configuration Register value – bootup specifications, console speed setting, etc.
+- Amount of RAM memory – amount of RAM memory
+- Amount of NVRAM memory
+- Amount of Flash memory
+
+The following example shows the output of the command:
+
+![](https://drive.google.com/uc?export=view&id=1NwIotgh52g-xyTwnYbqw_nuiZks7QVmB)
+
+### Show history command
+
+An IOS device stores, by default, 10 last commands you have entered in your current EXEC session. You can use the _show history_ command from the user EXEC or privileged EXEC mode to display them.
+
+![](https://drive.google.com/uc?export=view&id=1R5i0qhcNuMQ4oPrEgVYw7XVl36ym-nak)
+
+You can set a number of command saved in the buffer for the current terminal session by using the _terminal history size NUMBER_ command from the user EXEC or privileged EXEC mode.
+
+> **NOTE**
+Another way to recall your command from the history buffer is by using the **up arrow** key on your keyboard. Most recent command is recalled first.
+
+### Show running-configuration & show startup-configuration commands
+
+After you have changed the configuration of your device you can verify its configuration. To dispay the current configuration, type _show running-configuration_ from the privileged EXEC mode. This show the configuration that is stored in a device’s RAM.
+
+![](https://drive.google.com/uc?export=view&id=1BDFkqTiH9pfXaMUhHe6XTgXMp21FVnGq)
+
+After you have stored your running configuration into the startup configuration, you can view the saved configuration using the _show startup-config_ command from the privileged EXEC mode.
+
+This command shows the configuration that is currenty stored in the device’s NVRAM. This configuration will be loaded next time the device is restarted.
+
+![](https://drive.google.com/uc?export=view&id=1nwUBvcAYASilWCEAzn_25Yzj1kNB9njg)
 
 ---
 
 ## show command
 
+We’ve already mentioned a couple of _show commands_ in the previous sections, so you should already we somewhat aware of this command. This command is used to display the device’s configuration, statistics, command history, interface status… The _show_ command is invoked from the **enable** mode and can accept a lot of parameters:
+
+```json
+Floor1#show ?
+aaa Show AAA values
+access-lists List access lists
+arp Arp table
+cdp CDP information
+class-map Show QoS Class Map
+clock Display the system clock
+controllers Interface controllers status
+crypto Encryption module
+debugging State of each debugging option
+dhcp Dynamic Host Configuration Protocol status
+dot11 IEEE 802.11 show information
+file Show filesystem information
+flash: display information about flash: file system
+...
+terminal Display terminal configuration parameters
+users Display information about terminal lines
+version System hardware and software status
+vlan-switch VTP VLAN status
+vtp Configure VLAN database
+```
+
+Here is a brief description of the most popular _show_ commands:
+
+- _show running-config_ – displays the running (current) configuration of your device:
+- _show startup-config_ – displays the startup configuration of your device:
+- _show ip interface brief_ – provides information about the interfaces on a router, including the logical (IP) address and status:
+- _show history_ – shows the command history:
+- _show interface INTERFACE_ – displays the status of the specified interface:
+- _show version_ – shows information about the device, such as the IOS version running on the device, number of interfaces, device model, time of the last reboot, amount of memory available on the device, etc.
+
 ---
 
 ## Configure descriptions
+
+Adding a description to an interface on a Cisco device doesn’t provide any extra functionality, but it is useful for administrative purposes, since it will help you to remember the interface function. A description of an interface is locally significant and can be up to 240 characters long. It can be set using the **description** command from the interface submode:
+
+```json
+DEVICE(config) interface Fa0/1
+DEVICE(config-if) description WAN to London
+```
+
+Example configuration:
+
+![](https://drive.google.com/uc?export=view&id=1Dr5fRAC0L790WsACgfICMrlhgCDbRJXR)
+
+The description is displayed in the output of the show running-config command:
+
+![](https://drive.google.com/uc?export=view&id=1cC62MgL0MxwR2EDBfnWNQMMj0urgDM5R)
+
+To erase the description, use the no description interface mode command (or the shortcut no desc):
+
+![](https://drive.google.com/uc?export=view&id=1zzTqcDspa7tiXO3cykoXUY7_KUna7RjR)
 
 ---
 
 ## Run privileged commands within global config mode
 
+Beginning with the IOS 12.3, the privileged-exec mode commands (such as _show running-configuration_, show interface status, etc.) can be executed within the global configuration mode and its submodes. This allows you to execute privileged-exec mode commands without needing to exit the current configuration mode. Here is an example that explains the usefulness of this feature:
+
+![](https://drive.google.com/uc?export=view&id=1xmZ0uaLdSipUefGEwGdX7RBYY5RzkI1P)
+
+In the example above you can see that we’re currently in the interface submode. We want to get more information about the interface with the _show interface Fa0/1_ command, but we got an error because the command is not available in this mode. However, if we use the _do_ keyword in front of the command, the command will succeed:
+
+![](https://drive.google.com/uc?export=view&id=1SZ8fFEB0zM0qOCeoCv3imQS2eG-c9oKb)
+
+The command was now executed because of the _do_ keyword. Notice that we’re still in the interface submode and we can continue with the interface configuration.
+
 ---
 
 ## Ports on an IOS device
+
+Cisco uses the term **interface** to refer to physical ports on an IOS device. Interfaces can be configured with different settings, depending on the type of the interface and whether you are configuring an interface on a router or on a switch. For example, the **Cisco 7201 Router** has four GE physical ports (image source: Cisco):
+
+![](https://drive.google.com/uc?export=view&id=1kWMZYt17Yp6ZC-ptgAvBw5MX_PlpPBY1)
+
+To display the router interfaces in IOS, use the _show ip int brief_ command from the privileged exec mode:
+
+![](https://drive.google.com/uc?export=view&id=1V6dvL_Q1_gF-ab2oyeFsvIHIAAV5y-ws)
+
+In the output above we can see that this router has 2 physical interfaces – FastEthernet0/0 and FastEthernet0/1.
+
+Consider the output for the _Fa0/0_ interface:
+
+![](https://drive.google.com/uc?export=view&id=1IB3CysPd0QiKo8OOFJnmboGEHuqg5Qmw)
+
+Here is a brief description of each column:
+
+- **Interface** – displays the type of the interface, in this case Fast Ethernet 0/0. The first zero specifies the physical slot on the router, while the second zero specifies the port number.
+- **IP-Address** – displays the interface’s IP address.
+- **OK?** – YES in this column signifies that the IP address is currently valid.
+- **Method** – manual in this column means that the interface has been manually configured. DHCP means that the interface has been configured using DHCP.
+- **Status** – up indicates that the interface is administratively up.
+- **Protocol** – up indicates that the interface is operational.
+ 
+
+To configure a specific interface, use the _interface TYPE SLOT/PORT_ command from the global config mode. This puts us in the interface submode, where we can configure various interface options:
+
+![](https://drive.google.com/uc?export=view&id=1rb4GIO11FaErUffcIgad3mft_QoitWoD)
+
+In the example above you can see that we’ve configured the _speed_ option for the interface Fast Ethernet 0/0.
+
+By default, all ports on a Cisco switch are up and running as soon as you power-on the device. This means that all you need is to connect your devices and the switch and you are good to go. This isn’t the case with Cisco routers, however. You need to manually enable each interface on a router with the _no shutdown_ interface mode command:
+
+![](https://drive.google.com/uc?export=view&id=19e9oNfrXtvYNwkHJKg9WeiQPjYestEm7)
 
 ---
 
 ## Pipe character in IOS
 
+IOS supports the use of the **pipe character** (represented with the | character) to filter the output of the _show_ and _more_ commands. The pipe function takes the output of the command and sends it to another function, such as _begin_ or _include_. This way, you can filter the output to find the section of the output that interests you. Here are a couple of examples:
+
+![](https://drive.google.com/uc?export=view&id=1Hg8tOL1zGXEuPtUZspoMCV6MXBRmei7u)
+
+In the picture above you can see that we’ve entered the _show running-configuration_ | _begin interface_ command. This command starts the output from the first occurence of the word _interface_.
+
+Another example, this time with _include_:
+
+![](https://drive.google.com/uc?export=view&id=1MgAZN8K6oxUaKvCgsJK4B4h-mUQ59kr-)
+
+As you can see from the example above, the _include_ function displays only lines that include the word _password_.
+
+To display only the section of the output about a certain feature, use the section function:
+
+![](https://drive.google.com/uc?export=view&id=13OLRjf1_u9OFVlAklw3tdyqapEGGTSKK)
+
+You can see in the example above that the command displayed only the _vty section_ of the running configuration.
+
+NOTE
+Cisco Packet Tracer doesn’t support the **pipe** function. The examples above were created in GNS3.
+
 ---
 
 ## IOS boot sequence
+
+The **IOS boot sequence** is a process performed after an Cisco IOS device is powered on. The IOS device performs a **power-on self-test (POST)** to test its hardware components and choose an IOS image to load. The boot sequence consists of the following steps:
+
+1. The device performs the power-on self-test (POST) process to discover and verify its hardware components.
+
+2. If the POST test is successful, the bootstrap program is copied from ROM into RAM.
+
+3. The bootstrap program decides which IOS image to load from the flash memory into RAM, and then loads the chosen IOS.
+
+4. IOS finds the startup configuration file, usually located in NVRAM, and loads it into RAM as the running configuration.
 
 ---
 
 ## Backing up IOS configuration
 
----
+It is always a good idea to have a backup copy of the configuration of your IOS device. IOS configurations are usually copied to a TFTP server using the _copy_ command. You can backup both the startup configuration and the running configuration of your device. The _copy_ commands accepts two parameters: the first parameter is the _from_ location, and the second it the to location.
+
+TFTP is a client-server network protocol used to send and receive files. To backup files to a TFTP server, you will have to set it up first. You can use the Packet Tracer to do so; just add a **Server** to your topology, assign it an IP address and enable the TFTP service:
+
+![](https://drive.google.com/uc?export=view&id=16s86YIpVIGPrxcg1JWdxKBGxQg6mrM7w)
+
+To backup the startup configuration to a TFTP server, you can use the copy _startup-config tftp:_ command:
+
+![](https://drive.google.com/uc?export=view&id=1VBRDJU2_Uy24cgrIgLSdvB8YV1t0hRjI)
+
+Remember, the first parameter after the _copy_ keyword is the _from_ location, while the second one is the to location. In our case, the from location is the current startup-config, and the to location is the remote TFTP server.
+
+To restore the configuration, just switch the order of the parameters – _copy tftp startup-config_:
+
+![](https://drive.google.com/uc?export=view&id=1bFoup1KbXs6y_2LMjuvI10G6qoAYckf0)
+
+Notice that we had to specify the filename, along with the IP address of the TFTP server.

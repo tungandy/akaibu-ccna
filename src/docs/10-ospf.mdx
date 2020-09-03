@@ -4,32 +4,318 @@ title: 'OSPF'
 
 ## OSPF overview
 
+**OSPF (Open Shortest Path First)** is a link state routing protocol. Because it is an open standard, it is implemented by a variety of network vendors. OSPF will run on most routers that doesn’t necessarily have to be Cisco routers (unlike EIGRP which can be run only on Cisco routers).
+
+Here are the most important features of OSPF:
+
+- a classless routing protocol
+- supports VLSM, CIDR, manual route summarization, equal cost load balancing
+- incremental updates are supported
+- uses only one parameter as the metric – the interface cost.
+- the administrative distance of OSPF routes is, by default, 110.
+- uses multicast addresses 224.0.0.5 and 224.0.0.6 for routing updates.
+
+Routers running OSPF have to establish neighbor relationships before exchanging routes. Because OSPF is a link state routing protocol, neighbors don’t exchange routing tables. Instead, they exchange information about network topology. Each OSFP router then runs SFP algorithm to calculate the best routes and adds those to the routing table. Because each router knows the entire topology of a network, the chance for a routing loop to occur is minimal.
+
+Each OSPF router stores routing and topology information in three tables:
+
+- **Neighbor table** – stores information about OSPF neighbors
+- **Topology table** – stores the topology structure of a network
+- **Routing table** –  stores the best routes
+
+### OSPF neighbors
+
+OSPF routers need to establish a neighbor relationship before exchanging routing updates. OSPF neighbors are dynamically discovered by sending Hello packets out each OSPF-enabled interface on a router. Hello packets are sent to the multicast IP address of 224.0.0.5.
+
+The process is explained in the following figure:
+
+![](https://drive.google.com/uc?export=view&id=1VXHcT1ZEygFdABp4wY-Y-7-tcw-zHfVY)
+
+Routers R1 and R2 are directly connected. After OSFP is enabled both routers send Hellos to each other to establish a neighbor relationship. You can verify that the neighbor relationship has indeed been established by typing the _show ip ospf neighbors_ command.
+
+![](https://drive.google.com/uc?export=view&id=12vpwo8GdGmBHSsrY5QZY8ZuJQgD9fg2s)
+
+In the example above, you can see that the router-id of R2 is  2.2.2.2. Each OSPF router is assigned a router ID. A router ID is determined by using one of the following:
+
+1. using the router-id command under the OSPF process.
+2. using the highest IP address of the router’s loopback interfaces.
+3. using the highest IP address of the router’s physical interfaces.
+
+The following fields in the Hello packets must be the same on both routers in order for routers to become neighbors:
+
+- subnet
+- area id
+- hello and dead interval timers
+- authentication
+- area stub flag
+- MTU
+
+By default, OSPF sends hello packets every 10 second on an Ethernet network (Hello interval). A dead timer is four times the value of the hello interval, so if a routers on an Ethernet network doesn’t receive at least one Hello packet from an OSFP neighbor for 40 seconds, the routers declares that neighbor to be down.
+
+### OSPF neighbor states
+
+Before establishing a neighbor relationship, OSPF routers need to go through several state changes. These states are explained below.
+
+1. **Init state** – a router has received a Hello message from the other OSFP router
+2. **2-way state** – the neighbor has received the Hello message and replied with a Hello message of his own
+3. **Exstart state** – beginning of the LSDB exchange between both routers. Routers are starting to exchange link state information.
+4. **Exchange state** – DBD (Database Descriptor) packets are exchanged. DBDs contain LSAs headers. Routers will use this information to see what LSAs need to be exchanged.
+5. **Loading state** – one neighbor sends LSRs (Link State Requests) for every network it doesn’t know about. The other neighbor replies with the LSUs (Link State Updates) which contain information about requested networks. After all the requested information have been received, other neighbor goes through the same process
+6. **Full state** – both routers have the synchronized database and are fully adjacent with each other.
+
+### OSPF areas
+
+OSPF uses the concept of areas. An area is a logical grouping of contiguous networks and routers. All routers in the same area have the same topology table, but they don’t know about routers in the other areas. The main benefits of creating areas is that the size of the topology and the routing table on a router is reduced, less time is required to run the SFP algorithm and routing updates are also reduced.
+
+Each area in the OSPF network has to connect to the backbone area (area 0). All router inside an area must have the same area ID to become OSPF neighbors. A router that has interfaces in more than one area (area 0 and area 1, for example) is called **Area Border Router (ABR)**. A router that connects an OSPF network to other routing domains (EIGRP network, for example) is called **Autonomous System Border Router (ASBR)**.
+
+> **NOTE**
+In OSPF, manual route summarization is possible only on ABRs and ASBRs.
+
+To better understand the concept of areas, consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=1i5-mU5gggoEjtWELOXcqiS_naDPD2fnQ)
+
+All routers are running OSPF. Routers R1 and R2 are inside the backbone area (area 0). Router R3 is an ABR, because it has interfaces in two areas, namely area 0 and area 1. Router R4 and R5 are inside area 1. Router R6 is an ASBR, because it connects OSFP network to another routing domain (an EIGRP domain in this case). If the R1’s directly connected subnet fails, router R1 sends the routing update only to R2 and R3, because all routing updates all localized inside the area.
+
+> **NOTE**
+The role of an ABR is to advertise address summaries to neighboring areas. The role of an ASBR is to connect an OSPF routing domain to another external network (e.g. Internet, EIGRP network…).
+
+### LSA, LSU and LSR
+
+The **LSAs (Link-State Advertisements)** are used by OSPF routers to exchange topology information. Each LSA contains  routing and toplogy information to describe a part of an OSPF network. When two neighbors decide to exchange routes, they send each other a list of all LSAa in their respective topology database. Each router then checks its topology database and  sends a Link State Request (LSR) message requesting all LSAs not found in its topology table. Other router responds with the Link State Update (LSU) that contains all LSAs requested by the other neighbor.
+
+The concept is explained in the following example:
+
+![](https://drive.google.com/uc?export=view&id=1rGsmRyx8BiOcXDlcI2S2Wmhm2PyQmEYN)
+
+After configuring OSPF on both routers, routers exchange LSAs to describe their respective topology database. Router R1 sends an LSA header for its directly connected network 10.0.1.0/24. Router R2 check its topology database and determines that it doesn’t have information about that network. Router R2 then sends Link State Request message requesting further information about that network. Router R1 responds with Link State Update which contains information about subnet 10.0.1.0/24 (next hop address, cost…).
+
 ---
 
 ## OSPF configuration
+
+### Configuring OSPF 1
+
+OSPF basic configuration is very simple. Just like with other routing protocols covered so far (RIP, EIGRP) first you need to enable OSPF on a router. This is done by using the router ospf _PROCESS-ID_ global configuration command. Next, you need to define on which interfaces OSPF will run and what networks will be advertised. This is done by using the _network IP_ADDRESS WILDCARD_MASK AREA_ID_ command from the ospf configuration mode.
+
+> **NOTE**
+The OSPF process number doesn’t have to be the same on all routers in order to establish a neighbor relationship, but the Area ID has to be the same on all neighboring routers in order for routers to become neighbors.
+
+Let’s get started with some basic OSPF configuration. We will use the following network topology:
+
+![](https://drive.google.com/uc?export=view&id=11sHijxmilt4RMk-0pOtxUUalhTYJNRq-)
+
+First, we need to enable OSPF on both routers. Then we need to define what network will be advertised into OSPF. This can be done by using the following sequence of commands on both routers:
+
+![](https://drive.google.com/uc?export=view&id=1u-Ku5-Bmh3ZtIH-dwgeyycankLY1nkrg)
+
+![](https://drive.google.com/uc?export=view&id=1JlDfThhRQ5spBAivvgeqpu2RafUDtWqS)
+
+The _network_ commands entered on both routers include subnets directly connected to both routers. We can verify that the routers have become neighbors by typing the _show ip ospf neighbors_ command on either router:
+
+![](https://drive.google.com/uc?export=view&id=1hqPE-jlcYz9lgPjuigtrxjFX1Fe4qOqr)
+
+To verify if the routing updated were exchanged, we can use the _show ip route_ command. All routes marked with the character **O** are OSPF routes. For example, here is the output of the command on R1:
+
+![](https://drive.google.com/uc?export=view&id=1BK16-Afv7BK7pE8VybkHql-EWrrvP7oF)
+
+You can see that R1 has learned about the network 192.168.0.0/24 through OSPF.
+
+### Configuring OSPF 2
+
+Although basic OSPF configuration can be very simple, OSPF provides many extra features that can get really complex. In this example, we will configure multiarea OSPF network and some other OSPF features.
+
+Consider the following multiarea OSPF network:
+
+![](https://drive.google.com/uc?export=view&id=1uGVJ0YbcCBlELhhuVEYd2Z6YsQ-BU8LM)
+
+In this example we have two OSPF areas – area 0 and area 1. As you can see from the network topology depicted above, routers R1 and R3 are in the area 0 and area 1, respectively. Router 2 connects to both areas, which makes him an **ABR (Area Border Router)**. Our goal is to advertise the subnets directly connected to R1 and R3. To do that, the following configuration on R1 will be used:
+
+![](https://drive.google.com/uc?export=view&id=1bO0Yxaqlae_SaVv_xpFuvBJBoGbV-Ifc)
+
+> **NOTE**
+We have used the **router-id 1.1.1.1** command to manually specify the router ID of this router. OSPF process will use that RID (router-id) when communicating with other OSPF neighbors.
+
+Because R1 connects only to R2, we only need to establish a neighbor relationship with R2 and advertise directly connected subnet into OSPF.
+
+Configuration of R3 looks similar, but with one difference, namely area number. R3 is in the area 1.
+
+![](https://drive.google.com/uc?export=view&id=1cM4p04xRcXhexuQFkMAiONWXvsTDFw44)
+
+What about R2? Well, because R2 is an ABR, we need to establish neighbor relationship with both R1 and R3. To do that, we need to specify different area ID for each neighbor relationship, 0 for R1 and 1 for R2. We can do that using the following sequence of commands:
+
+![](https://drive.google.com/uc?export=view&id=1MXSq_R4xFmzBwQ-wmnkGO7EMe1xOpPyu)
+
+Now R2 should have neighbor relationship with both R1 and R3. We can verify that by using the _show ip ospf neighbor_ command:
+
+![](https://drive.google.com/uc?export=view&id=1E3i4NCyYI7klZO6ZHi6Mz_1il2XFGIMh)
+
+To verify if directly connected subnets are really advertised into the different area, we can use the _show ip route ospf_ command on both R1 and R3:
+
+![](https://drive.google.com/uc?export=view&id=1Vb896plXLM8aKdtJKk0gdNrDHhJdLzjy)
+
+![](https://drive.google.com/uc?export=view&id=1yEc7cWvZ6mmru4c-lS1tHYcPARYjrQ6k)
+
+Characters **IA** in front of the routes indicate that these routes reside in different areas.
+
+> **NOTE**
+Since they reside in different areas, R1 and R3 will never establish a neighbor relationship.
 
 ---
 
 ## Designated & Backup Designated Router
 
+Based on the network type, OSPF router can elect one router to be a **Designated Ruter (DR)** and one router to be a B**ackup Designated Router (BDR)**. For example, on multiaccess broadcast networks (such as LANs) routers defaults to elect a DR and BDR. DR and BDR serve as the central point for exchanging OSPF routing information. Each non-DR or non-BDR router will exchange routing information only with the DR and BDR, instead of exchanging updates with every router on the network segment. DR will then distribute topology information to every other router inside the same area, which greatly reduces OSPF traffic.
+
+To send routing information to a DR or BDR the multicast address of 224.0.0.6 is used. DR sends routing updates to the multicast address of 224.0.0.5. If DR fails, BDR takes over its role of redistributing routing information.
+
+Every router on a network segment will establish a full neighbor relationship with the DR and BDR. Non-DR and non-BDR routers will establish a two way neighbor relationship between themselves.
+
+> **NOTE**
+On point-to-point links, a DR and BDR are not elected since only two routers are directly connected.
+
+On LANs, DR and BDR have to be elected. Two rules are used to elect a DR and BDR:
+
+1. router with the highest OSPF priority will become a DR. By default, all routers have a priority of 1.
+2. if there is a tie, a router with the highest router ID wins the election. The router with the second highest OSPF priority or router ID will become a BDR.
+
+To better understand the concept, consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=12XBvWRrZ4fq9l30VIYLdONv4EchlFdqC)
+
+All routers depicted above are in the same area (area 0). All routers are running OSPF. Routers R1 and R2 have been elected as DR and BDR because they have the highest and the second highest router ID (100.0.0.0 and 90.0.0.0 respectively). If, for example, R3’s directly connected subnet fails, R3 informs R1 and R2 (the DR and BDR for the segment) of the network change (step 1). R1 then informs all other non-DR and non-BDR routers of the change in topology (step 2).
+
+We can verify that R1 and R2 are indeed the DR and BDR of the segment by typing the _show ip ospf neighbors_ command on R3:
+
+```json
+R3#show ip ospf neighbor 
+
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+60.0.0.0          1   FULL/DROTHER    00:00:33    10.0.0.5        FastEthernet0/0
+100.0.0.0         1   FULL/DR         00:00:33    10.0.0.1        FastEthernet0/0
+70.0.0.0          1   FULL/DROTHER    00:00:33    10.0.0.4        FastEthernet0/0
+90.0.0.0          1   FULL/BDR        00:00:33    10.0.0.2        FastEthernet0/0
+```
+
+> **NOTE**
+You can influence the DR and BDR election process by manually configuring the OSPF priority. This is done by using the **ip ospf priority VALUE** command interface command.
+
 ---
 
 ## OSPF authentication
+
+OSPF can be configured to authenticate every OSPF message. This is usually done to prevent a rogue router from injecting false routing information and therefore causing a Denial-of-Service attack.
+
+Two types of authentication can be used:
+1. **clear text authentication** – clear text passwords are used
+2.  **MD5 authentication** – MD5 authentication is used. This type of authentication is more secure because the password doesn’t go in clear-text over the network.
+
+> **NOTE**
+With OSPF authentication turned on, routers must pass the authentication process before becoming OSPF neighbors.
+
+To configure clear text authentication, the following steps are required:
+
+1. configure the OSPF password on the interface by using the _ip ospf authentication-key PASSWORD_ interface command
+2. configure the interface to use OSPF clear-text authentication by using the _ip ospf authentication_ interface command
+
+In the following example, we will configure OSPF clear-text authentication.
+
+![](https://drive.google.com/uc?export=view&id=1OJDrKSdYB5qAeu1vw8SgVwbdslUHCdbb)
+
+Both routers are running OSPF. On R1, we need to enter the following commands:
+
+![](https://drive.google.com/uc?export=view&id=165epXEXJSiLBCcd9YFMRUb8wyPHTLv2X)
+
+The same commands have to be entered on R2:
+
+![](https://drive.google.com/uc?export=view&id=1kvcTJtrKMWhK9D-KU4xVuHFp7xnnlAp1)
+
+To verify that clear-text authentication is indeed turned on, we can use the _show ip ospf interface INTERFACE_NUMBER/INTERFACE_TYPE_ command on either router:
+
+![](https://drive.google.com/uc?export=view&id=1kc6bV1B1gyiIR3Cano3mYJGlUFyqzqHI)
+
+Configuring OSPF MD5 authentication is very similar to configuring clear-text authentication. Two commands are also used:
+
+1. First you need to configure the MD5 value on an interface by using the _ip ospf message-digest-key 1 md5 VALUE_ interface command
+2. Next, you need to configure the interface to use MD5 authentication by using the _ip ospf authentication message-digest_ interface command
+
+Here is an example configuration on R1:
+
+![](https://drive.google.com/uc?export=view&id=1psL9pnYuXPhyy0Ad_YOG1eq5mfWnWDZv)
+
+You can verify that R1 is using OSPF MD5 authentication by typing the _show ip ospf INTERFACE/INTERFACE_TYPE_ command:
+
+![](https://drive.google.com/uc?export=view&id=1yEkuO6JCrdoVP-cMuCt07qwVN9lx3tIz)
+
+> **NOTE**
+OSPF authentication type can also be enabled on an area basis, instead of configuring OSPF authentication type per interface basis. This is done by using the area *AREA_ID authentication [message-digest]* command under the OSPF configuration mode. If you omit the message-digest keyword, a clear-text authentication will be used for that area. All interfaces inside the area will use OSPF authentication.
 
 ---
 
 ## OSPF summarization
 
+Route summarization helps reduce OSPF traffic and route computation. OSPF, unlike EIGRP, doesn’t support automatic summarization. Also, unlike EIGRP, where you can summarize routes on every router in an EIGRP network, OSFP can summarize routes only on ABRs and ASBRs.
+
+The following command is used for OSPF summarization:
+
+```json
+(config-router) area AREA_ID range IP_ADDRESS MASK
+```
+
+To better understand OSPF summarization, consider the following example network:
+
+![](https://drive.google.com/uc?export=view&id=1meFiGIYjBrBWSwpU2yUb0ggSi6LBJ3pE)
+
+All three routers are running OSPF and exchanging routers. Before OSPF summarization is configured, the router R1 inside the backbone area has two entries for the networks 11.0.0.0/24 and 11.0.1.0/24 in its routing table.
+
+![](https://drive.google.com/uc?export=view&id=1oOLfvIVy53MBpRPTAkt7c9S9YHbDeVM2)
+
+We could summarize these two subnets on R2, so that R1 receive only one routing update for both subnets. To do that, the following command can be used on R2:
+
+![](https://drive.google.com/uc?export=view&id=1EkIL0RhUIMVaQC0u15YaC8R8s2Z3DDli)
+
+Now, R1 has only one entry in its routing table for R3’s directly connected subnets:
+
+![](https://drive.google.com/uc?export=view&id=1Oocb8soJAY94frYfXygupxpk0QEwtoJA)
+
+> **NOTE**
+Be careful with summarization. In this case, router R1 thinks that R2 has routes for all subnets in the range 11.0.0.0 – 11.0.255.255. When summarizing, try to be as specific as possible.
+
 ---
 
 ## OSPF summary
+
+Here is a list of the most important OSPF features:
+
+- link state routing protocol
+- classless routing protocol
+- supports VLSM (Variable Length Subnet Mask)
+- converges fast
+- uses the concept of areas
+- uses multicast address for routing updates (224.0.0.5 and 224.0.0.6)
+- sends partial routing updates
+- supports only equal cost load balancing
+- manual summarization can be done only on ABRs and ASBRs
+- uses interface cost as a metric
+- uses SPF algorithm to calculate the best paths
+- open standard
+- each router inside an area has the same topology table
+- supports clear-text and MD5 authentication
 
 ---
 
 ## Differences between OSPF and EIGRP
 
+The following table lists the differences between OSPF and EIGRP:
+
+![](https://drive.google.com/uc?export=view&id=1AaTFmpot0N_hZlDGkLh30mQiu7Ry86h9)
+
 ---
 
 ## Comparing internal routing protocols (IGPs)
 
----
+The following table lists the differences between the three most popular interior routing protocols:
+
+![](https://drive.google.com/uc?export=view&id=1zX2s3jtB6EzELCf-te-UT5rAEkKRM4cc)

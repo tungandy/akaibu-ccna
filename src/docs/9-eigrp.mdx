@@ -4,32 +4,421 @@ title: 'EIGRP'
 
 ## EIGRP overview
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+**EIGRP (Enhanced Interior Gateway Routing Protocol)** is an advanced distance vector routing protocol. This protocol is an evolution of an earlier Cisco protocol called IGRP, which is now considered obsolete. EIGRP supports classless routing and VLSM, route summarization, incremental updates, load balacing and many other useful features. It is a Cisco propriatery protocol, so all routers in a network that is running EIGRP must be Cisco routers.
+
+Routers running EIGRP must become neighbors before exchanging routing information. To dynamically discover neighbors, EIGRP routers use the multicast address of 224.0.0.10. Each EIGRP router stores routing and topology information in three tables:
+
+- Neighbor table – stores information about EIGRP neighbors
+- Topology table – stores routing information learned from neighboring routers
+- Routing table –  stores the best routes
+
+Administrative distance of EIGRP is 90, which is less than both the administrative distance of RIP and  the administrative distance of OSPF, so EIGRP routes will be preferred over these routes. EIGRP uses Reliable Transport Protocol (RTP) for sending messages.
+
+EIGRP calculates its metric by using bandwidth, delay, reliability and load. By default, only bandwidth and delay are used when calulating metric, while reliability and load are set to zero.
+
+EIGPR uses the concept of autonomous systems. An autonomous system is a set of EIGRP enabled routers that should become EIGRP neighbors. Each router inside an autonomous system must have the same autonomous system number configured, otherwise routers will not become neighbors.
+
+### EIGRP Neighbors
+
+EIGRP must establish neighbor relationships with other EIGRP neighboring routers before exchanging routing information. To establish a neighbor relationships, routers send hello packets every couple of seconds. Hello packets are sent to the multicast address of 224.0.0.10.
+
+NOTE
+On LAN interfaces hellos are sent every 5 seconds. On WAN interfaces every 60 seconds.
+
+The following fields in a hello packet must be the identical in order for routers to become neighbors:
+
+- ASN (autonomous system number)
+- subnet number
+- K values (components of metric)
+ 
+
+Routers send hello packets every couple of seconds to ensure that the neighbor relationship is still active. By default, routers considers the neighbor to be down after a hold-down timer has expired. Hold-down timer is, by default, three times the hello interval. On LAN network the hold-down timer  is 15 seconds.
+
+### Feasible and reported distance
+
+Two terms that you will often encounter when working with EIGRP are feasible and reported distance. Let’s clarify these terms:
+
+- **Feasible distance (FD)** – the metric of the best route to reach a network. That route will be listed in the routing table.
+- **Reported distance (RD)** – the metric advertised by a neighboring router for a specific route. It other words, it is the metric of the route used by the neighboring router to reach the network.
+
+To better understand the concept, consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=19fiE5XAWZcKawvqNfEymmmQ9AtlK-i_b)
+
+EIGRP has been configured on R1 and R2. R2 is directly connected to the subnet 10.0.1.0/24 and advertises that subnet into EIGRP. Let’s say that R2’s metric to reach that subnet is 28160. When the subnet is advertised to R1, R2 informs R1 that its metric to reach 10.0.1.0/24 is 28160. From the R1’s perspective that metric is considered to be the **reported distance** for that route. R1 receives the update and adds the metric to the neighbor to the reported distance. That metric is called the **feasible distance** and is stored in R1’s routing table (30720 in our case).
+
+The feasible and reported distance are displayed in R1’s EIGRP topology table:
+
+```json
+R1#show ip eigrp topology 
+IP-EIGRP Topology Table for AS 1/ID(192.168.0.1)
+
+Codes: P - Passive, A - Active, U - Update, Q - Query, R - Reply,
+       r - Reply status
+
+P 10.0.1.0/24, 1 successors, FD is 30720
+         via 192.168.0.2 (30720/28160), FastEthernet0/0
+P 192.168.0.0/24, 1 successors, FD is 28160
+         via Connected, FastEthernet0/0
+```
+
+### Successor and feasible successor
+Another two terms that appear often in the EIGRP world are **successor** and **feasible successor**. A successor is the route with the best metric to reach a destination. That route is stored in the routing table. A feasible successor is a backup path to reach that same destination that can be used immediately if the successor route fails. These backup routes are stored in the topology table.
+
+For a route to be chosen as a feasible successor, one condition must be met:
+
+- the neighbor’s advertised distance (AD) for the route must be less than the successor’s feasible distance (FD).
+
+The following example explains the concept of a successor and a feasible successor.
+
+![](https://drive.google.com/uc?export=view&id=10xBlZBVt_rjv3CEhs53hFInt5JNbwBJ3)
+
+R1 has two paths to reach the subnet 10.0.0.0/24. The path through R2 has the best metric (20) and it is stored in the R1’s routing table. The other route, through R3, is a feasible successor route, because the feasiblility condition has been met (R3’s advertised distance of 15 is less than R1’s feasible distance of 20). R1 stores that route in the topology table. This route can be immediately used if the primary route fails.
+
+### EIGRP topology table
+
+EIGRP toplogy table contains all learned routes to a destination. The table holds all routes received from a neighbor, successors and feasible successors for every route, and interfaces on which updates were received. The table also holds all locally connected subnets included in an EIGRP process.
+
+Best routes (the successors) from the topology table are stored in the routing table. Feasible successors are only stored in the topology table and can be used immediately if the primary route fails.
+
+Consider the following network topology.
+
+![](https://drive.google.com/uc?export=view&id=199tFr02DupzoTMO-ZONnPnqtAJDTKnVX)
+
+EIGRP is running on all three routers. Routers R2 and R3 both connect to the subnet 10.0.1.0/24 and advertise that subnet to R1. R1 receives both updates and calulates the best route. The best path goes through R2, so R1 stores that route in the routing table. Router R1 also calculates the metric of the route through R3. Let’s say that advertised distance of that route is less then feasible distance of the best route. The feasibility condition is met and router R1 stores that route in the topology table as a feasible successor route. The route can be used immediately if the primary route fails.
+
 ---
 
 ## EIGRP configuration
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+### Configuring EIGRP 1
+
+EIGRP configuration closely resembles RIP configuration. Only two steps are required:
+
+- enabling EIGRP by using the _router eigrp ASN_NUMBER_ command
+- telling EIGRP which networks to advertise by using one or more _network_ statements
+
+The first command, router eigrp *ASN_NUMBER*, enables EIGRP on a router. *ASN_NUMBER* represents an autonomous system number and has to be the same on all routers running EIGRP, otherwise routers won’t become neighbors. The second command, _network SUBNET_, enables EIGRP on selected interfaces and specifies which networks will be advertised. By default, the network command takes a classful _network_ number as the parameter.
+
+To illustrate a configuration of EIGRP, we will use the following network:
+
+![](https://drive.google.com/uc?export=view&id=1RQyREjgm8eq3Aj5Ra-Q_nCT5OQ6pq44x)
+
+The network depicted above consists of only two routers. Each router has a directly connected subnet that needs to be advertised through EIGRP. Here is the EIGRP configuration on R1 and R2:
+
+![](https://drive.google.com/uc?export=view&id=1AwI1lO7_Y8QJQzFld2ihlfSTuCw4TY7U)
+
+![](https://drive.google.com/uc?export=view&id=1OAApv-SHzi37dZj2aVLKsqVZw15JLqtu)
+
+You can verify that routers have become neighbors by using the _show ip eigrp neighbors_ command on either router:
+
+![](https://drive.google.com/uc?export=view&id=1824sF_7X9EMOMZllzBKvdj-SmwCHDghZ)
+
+The command above lists all EIGRP neighbors. The address field lists the neighboring router RID (router ID). The interface field shows on which local interface the neighbor relationship has been formed.
+
+You can verify that routes are indeed being exchanged by using the _show ip route_ command on both routers:
+
+R1:
+
+![](https://drive.google.com/uc?export=view&id=1vtjA8EqWNteKNmXM0dSkS-6ZkWXrANvt)
+
+R2:
+
+![](https://drive.google.com/uc?export=view&id=1_om4o3xk4-notdfzfJcK-XUFMk6uGPl4)
+
+> **NOTE**
+The D character at the beginning of a line in a routing table indicates that the route has been learned via EIGRP.
+
+### Configuring EIGRP 2
+
+By default, the _network_ command uses a classful network as the parameter. All interfaces inside that classful network will participate in the EIGRP process.To enable EIGRP only on specific interfaces, a wildcard mask can be used. The syntax of the command is:
+
+```json
+(router-eigrp) network WILDCARD_MASK
+```
+
+Consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=1aP4a7berJt8jOH3E5piyjmK3czjS59yL)
+
+Router R1 has two directly connected subnets, 10.0.0.0/24 and 10.0.1.0/24. We want to enable EIGRP only on the subnet connected to the interface Fa0/0. If we enter the _network 10.0.0.0_ command under the EIGRP configuration mode, both subnets will be included in EIGRP process because we’ve used a classful network number in the _network_ command. To configure EIGRP only on interface Fa0/0, the _network 10.0.0.0 0.0.0.255_ command can be used. This will enable EIGRP only on interfaces starting with **10.0.0.X**.
+
+![](https://drive.google.com/uc?export=view&id=1zIOu4OdTPDAL4WcbiZSkmJI-zfAVDOBg)
+
+By using the command _show ip protocols_, you can verify that only the network 10.0.0.0/24 is included in  EIGRP:
+
+![](https://drive.google.com/uc?export=view&id=1sgtQlG31KVYtkNbC77QukumfNPijlkcq)
 
 ---
 
 ## Wildcard mask in EIGRP
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+The _network_ command in EIGRP uses a classful network as the parameter by default, which means that all interfaces inside the classful network will participate in the EIGRP process. We can enable EIGRP only for specific networks using wildcard masks. The syntax of the command is:
+
+```json
+(router-eigrp)#network IP_ADDRESS WILDCARD_MASK
+```
+
+We will use the following example network:
+
+![](https://drive.google.com/uc?export=view&id=1qKO5XNnvQOqyI8Xa9_RJbVZEDLOJZBZ4)
+
+The router is directly connected to three subnets. Let’s say that we want to advertise only the 10.0.0.0/24 subnet in EIGRP. We can use the wildcard mask of 0.0.0.255 to do this:
+
+```json
+R1(config-router)#network 10.0.0.0 0.0.0.255
+```
+
+Using the _show ip protocols_ command we can verify that only the subnet 10.0.0.0/24 is included in EIGRP:
+
+```json
+R1#show ip protocols
+
+Routing Protocol is "eigrp 1 " 
+Outgoing update filter list for all interfaces is not set 
+Incoming update filter list for all interfaces is not set 
+Default networks flagged in outgoing updates 
+Default networks accepted from incoming updates 
+EIGRP metric weight K1=1, K2=0, K3=1, K4=0, K5=0
+EIGRP maximum hopcount 100
+EIGRP maximum metric variance 1
+Redistributing: eigrp 1
+Automatic network summarization is in effect 
+Automatic address summarization: 
+Maximum path: 4
+Routing for Networks: 
+10.0.0.0/24
+Routing Information Sources: 
+Gateway Distance Last Update 
+Distance: internal 90 external 170
+```
+
+Notice that 10.0.0.0/24 is listed under the **Routing for Networks** column. The other two networks (10.0.1.0/24 and 10.0.5.0/24) are not included in EIGRP.
+
 ---
 
 ## EIGRP automatic & manual summarization
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+Route summarization is a method of representing multiple networks with a single summary address. It is often use in large networks with many subnets because it reduces the number of routes that a router must maintain and minimizes the traffic used for routing updates. Two methods for summarizing routes exist: automatic summarization and manual summarization.
+
+### EIGRP automatic summarization
+
+By default, EIGRP has the auto summary feature enabled. Because of this, routes are summarized to classful address at network boundaries in the routing updates.
+
+To better understand the concept of auto-summarization, consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=1_HWZO36tKB1rj2XPXJztI7gPXc6tJSWQ)
+
+Router R1 and R2 are running EIGRP. Router R1 has the locally connected subnet 10.0.1.0/24 that is advertised to the router R2. Because of the auto summary feature, the router R1 summarizes the network 10.0.1.0/24 before sending the route to R2. With the auto summary feature turned on, R1 sends the classful route 10.0.0.0/8 to R2 instead of the more specific 10.0.1.0/24 route.
+
+On R1, we have configured the following network statement:
+
+![](https://drive.google.com/uc?export=view&id=1XO4b9ulg6ufaU_KFhPCiH8FMeqw4OYlD)
+
+But, because of the auto-summary feature, R2 receives the route to the classful network 10.0.0.0/8:
+
+![](https://drive.google.com/uc?export=view&id=1CnVt-xrlFPVu6JqOfVULX_oR0vKLfAG5)
+
+The auto summary feature can cause problems with discontiguous networks. This is why this feature is usually turned off. This is done by using the _no auto-summary_ command:
+
+![](https://drive.google.com/uc?export=view&id=1jod0ThK4Of29vO0_rS3OANZazszPz5GT)
+
+Now R2 has the classless route to reach the subnet 10.0.1.0/24:
+
+![](https://drive.google.com/uc?export=view&id=1zTD4mX2H-FhJgQc0hqpM66llvSHsJhJx)
+
+> **NOTE**
+After typing the **no auto-summary** command, the neighbor relationship will be re-established.
+
+### EIGRP manual summarization
+
+One of the advantages of EIGRP over some other routing protocols (like OSPF) is that manual summarization can be done on any router within a network. A single route can be used to represent multiple routes, which reduces the size of routing tables in a network.
+
+Manual summarization is configured on a per-interface basis. The syntax of the command is:
+
+```json
+(config-if) ip summary-address eigrp ASN SUMMARY_ADDRESS SUBNET_MASK
+```
+
+An example will help you to understand the concept of manual summarization:
+
+![](https://drive.google.com/uc?export=view&id=1r-7X9pSq6P89s7Ri_nWNGRoOSVM0I20q)
+
+Router R1 and R2 are running EIGRP. Router R1 (on the left) has two directly connected subnets: 10.0.0.0/24 and 10.0.1.0/24. EIGRP advertises these subnets as two separate routes. R2 now has two routes for two subnets, which can be confirmed by using the _show ip route_ command on R2:
+
+![](https://drive.google.com/uc?export=view&id=1GBkJ7HbWdwrdeGfZDL-Hw-5_OQlNMmQl)
+
+We could configure R1 to advertise only one summary route for both subnets, which helps reduce R2’s routing table. To do this, the following command can be used:
+
+![](https://drive.google.com/uc?export=view&id=1IkEE5MAY89Oebotdu5dHu5EG02cp_l8P)
+
+Now, R1 is sending only one route to reach both subnets to R2. We can verify that by using the _show ip route_ command on R2:
+ 
+![](https://drive.google.com/uc?export=view&id=1dsA1EnL_Sej0lOfhnvY07BpjwHANCLPq)
+
+Now R2 has only one route to reach both subnets on R1.
+
+> **NOTE**
+In the example above, the _ip summary_ command included two subnets on R1, but also some other addresses that are not in these subnets. The range of the summarized addresses is **10.0.0.0 – 10.0.255.255**, so R2 thinks that R1 has the routes for all addresses inside that range. That could cause some problems if these addresses exist somewhere else in the network.
 
 ---
 
 ## EIGRP authentication & load balancing
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+
+### EIGRP authentication
+
+EIGRP authentication is used to prevent an attacker from forming the EIGRP neighbor relationship with your router and advertising incorrect routing information. By using the same **preshared key (PSK)** on all routers you can force EIGRP to authenticate each EIGRP message. That way you can ensure that your router accepts routing updates only from the trusted sources. To authenticate every message, the MD5 (Message Digest 5) algorithm is used.
+
+Three steps are required to configure EIGRP authentication:
+
+1. creating a keychain
+2. specifying a key string for a key
+3. configuring EIGRP to use authentication
+
+EIGRP uses the concept of key chains. Each key chain can have many keys, just like in real life. You can specify a different lifetime interval of each key. That way the second key in a key chain can be used after the first one is expired, the third one after the second and so on. After you have created a key chain with the corresponding keys, you need to enable EIGRP authentication for a particular interface.
+
+To configure a router to use EIGRP configuration the following commands are used:
+
+1. (global-config) _key chain NAME_ – creates a keychain
+2. (config-keychain) _key NUMBER_ – identifies the key number
+3. (config-keychain-key) _key-string STRING_ – specifies the key string for the key
+
+Next, we need to enable EIGRP authentication on an interface. From the interface mode, the following commands are used:
+
+4. (config-if) _ip authentication mode eigrp ASN md5_ – enables EIGRP authentication on the interface
+5. (config-if) *ip authentication key-chain eigrp ASN KEY_CHAIN_NAME* – specifies the name of the key chain that will be used for authentication
+
+> **NOTE**
+For the authentication to work, the key number and the key string have to match on both routers! The key chain name doesn’t have to be the same on both routers.
+
+The following example shows how EIGRP authentication is configured:
+
+![](https://drive.google.com/uc?export=view&id=1z5kmdMozNf8dSy6j4bleymp-_u9RFddX)
+
+To establish a time frame for the validity of a key, you need to configure the accept-lifetime and the send-lifetime parameters. The syntax of the commands is:
+
+```json
+(config-keychain-key) accept-lifetime start_time {infinite | end_time | duration seconds}
+(config-keychain-key) send-lifetime start_time {infinite | end_time | duration seconds}
+```
+
+The first command specifies the time period during which the key will be accepted. The second command specifies the time period during which the key will be sent.
+
+For example, if we want to use a key only from January 1st, 2013 to December 1st, 2013, the following commands are used:
+
+![](https://drive.google.com/uc?export=view&id=1mZwhG_-tn0SoapUPgAUVCHSLA8eEpNW-)
+
+### EIGRP load balancing
+
+By default, EIGRP supports equal-cost load balancing over four links. Equal-cost means that multiple routes must have the same metric to reach the destination, so that router can choose to load balance across equal cost links.
+
+To better understand the equal-cost load balancing concept, consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=1iwdvEmYkgfqo8Ka1RW2klOciyI09CfFE)
+
+All three routers are running EIGRP. Routers R2 and R3 are connected to the subnet 10.0.1.0/24. Both routers advertise the route to reach that subnet to R1. Router R1 receives the two routing updates for the subnet 10.0.1.0/24 with the same metric (the metric is the same because both routers connect to the subnet 10.0.1.0/24 and R1 across the links with the same bandwidth and delay values). Router R1 places both routes in the routing table and load balances across three links.
+
+You can verify that R1 is indeed using both paths by typing the _show ip route_ command:
+
+![](https://drive.google.com/uc?export=view&id=18QdVETjpF0eFxsIuCJBaCUPx_bBd8jWK)
+
+One of the advantages of EIGRP is that, unlike OSPF and many other routing protocols, EIGRP also supports unequal-cost load balancing. You can set up your router to load balance over links with different metric to reach the destination. To accomplish unequal-cost load balancing, the _variance_ command is used. The command takes one parameter, the multiplier, which tells the router to load balance across each link with the metric for the destination less than the feasible distance multiplied by the multiplier value.
+
+> **NOTE**
+The multiplier value, by default, is 1. The maximum value is 128.
+
+Consider the following example.
+
+![](https://drive.google.com/uc?export=view&id=1Ct6yNp5HkR4m3fVoM0FpKYnjBX3l2CQy)
+
+All three routers are running EIGRP. Routers R2 and R3 are connected to the subnet 10.0.1.0/24. Both routers advertise the route to reach that subnet to R1. Router R1 chooses the route from R2 as the best route. Let’s say that R1 calculated the metric of 40 for the path through R2. That route is placed in the R1’s routing table. But what if we want to load balance traffic across the other link? The route through R3 has a feasible distance of 30, which is less than the metric of the successor route, so the feasibility condition has been met and that route has been placed in the R1’s topology table. Let’s say that R1 calculated the metric of 60 for the route through R3. To enable load balancing across that link, you need to use the variance command:
+
+```json
+(router-eigrp) variance MULTIPLIER
+```
+
+In our example, the _variance 2_ command can be used. This tells the router to load balance across any links with the metric less then 80 (because 40 times 2 is 80). The route through R3 is added to the routing table.
+
+> **NOTE**
+A path has to be a feasible successor route to be used in unequal load balancing.
+
 ---
 
 ## EIGRP Reliable Transport Protocol (RTP)
+
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+EIGRP doesn’t send messages with UDP or TCP; instead, a Cisco’s protocol called **Reliable Transport Protocol (RTP)** is used for communication between EIGRP-speaking routers. As the name implies, reliability is a key feature of this protocol, and it is designed to enable quick delivery of updates and tracking of data reception.
+
+Five different packets types are used by EIGRP:
+
+- **Update** – contains route information. When routing updates are sent in response to the metric or topology changes, reliable multicasts are used. In the event that only one router needs an update, for example when a new neighbor is discovered, unicasts are used.
+- **Query** – a request for specific routes that always uses the reliable multicast method. Routers send queries when they realize they’ve lost the path to a particular network and are looking for alternative paths.
+- **Reply** – sent in response to a query via the unicast method. Replies can include a specific route to the queried destination or declare that there is no known route.
+- **Hello** – used to discover EIGRP neighbors. It is sent via unreliable multicast and no acknowledgment is required.
+- **Acknowledgment (ACK)** – sent in response to an update and is always unicast. ACKs are not sent reliably.
+ 
+> **NOTE**
+The acronym RTP is also used for a different protocol – **Real-time Transport Protocol (RTP)**, used for VoIP communication.
 
 ---
 
 ## EIGRP Diffusing Update Algorithm (DUAL)
 
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+**iffusing Update Algorithm (DUAL)** is an algorithm used by EIGRP to select and maintain the best route to each remote network. DUAL is also used for the following purposes:
+
+- discover a backup route if there is one available.
+- support for variable length subnet masks (VLSMs).
+- perform dynamic route recoveries.
+- query neighbors for unknown alternate routes.
+- send out queries for alternate routes.
+ 
+
+EIGRP stores all routes advertised by all EIGRP neighbors. The metric of these routes is used by DUAL to select the efficient and loop free paths. DUAL selects routes that will be inserted into the routing table. If a route fails, and there is no feasible successor, DUAL chooses a replacement route, which usually takes a couple of seconds.
+
+The following requirements must be met in order for DUAL to work properly:
+
+- EIGRP neighbors must discovered.
+- all transmitted EIGRP messages should be received correctly.
+- all changes and messages should be processed in the order in which they’re detected.
+
 ---
 
 ## EIGRP summary
 
----
+> **NOTE**
+This topic is not included in the latest version of the CCNA exam (200-301). If you are studying for the exam feel free to skip this article.
+ 
+Here is a list of the most important EIGRP features:
+
+- advanced distance vector routing protocol
+- classless routing protocol
+- supports VLSM (Variable Length Subnet Mask)
+- converges fast
+- supports multiple Network layer protocols (IPv4, IPv6, IPX, AppleTalk…)
+- uses multicast address of 224.0.0.10 for routing updates
+- sends partial routing updates
+- supports equal and unequal-cost load balancing
+- supports manual summarization on any router within a network
+- by default, uses bandwidth and delay to calculate its metric
+- Cisco proprietary
+- supports MD5 authentication

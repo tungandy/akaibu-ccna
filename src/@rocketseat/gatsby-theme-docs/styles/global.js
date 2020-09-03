@@ -143,11 +143,14 @@ export default function GlobalStyle() {
             font-style: normal !important;
           }
         }
+        .token  {
+          font-size: 12px !important;
+        }
         pre[class*='language-']::before {
           background: #d9d7e0;
           border-radius: 0 0 4px 4px;
           color: #232129;
-          font-size: 12px;
+          font-size: 10px !important;
           font-family: SFMono-Regular, Menlo, Monaco, Consolas,
             'Liberation Mono', 'Courier New', monospace;
           letter-spacing: 0.075em;
