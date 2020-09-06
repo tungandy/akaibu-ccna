@@ -53,7 +53,7 @@ export default function GlobalStyle() {
         }
         p {
           color: #24292e;
-          font-size: 14px;
+          font-size: 16px;
           line-height: 28px;
           margin-bottom: 16px;
           font-weight: 400;
