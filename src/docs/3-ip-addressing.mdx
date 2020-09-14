@@ -133,7 +133,7 @@ Before we start subnetting, we have to ask ourselves these two questions:
 
 **1. How many subnets do we need?**
 
-2<sup>x</sup> = number of subnets. **x** is the number of 1s in the subnet mask. With 1 subnet bit, we can have 21 or 2 subnets. With 2 bits, 22 or 4 subnets, with 3 bits, 23 or 8 subnets, etc.
+2<sup>x</sup> = number of subnets. **x** is the number of 1s in the subnet mask. With 1 subnet bit, we can have 2<sup>1</sup> or 2 subnets. With 2 bits, 2<sup>2</sup> or 4 subnets, with 3 bits, 2<sup>3</sup> or 8 subnets, etc.
 
 **2. How many hosts per subnet do we need?**
 
@@ -143,7 +143,7 @@ Before we start subnetting, we have to ask ourselves these two questions:
 
 An example will help you understand the subnetting concept. Let’s say that we need to subnet a class C address **192.168.0.0/24**. We need two subnets with **50** hosts per subnet. Here is our calculation:
 
-1. Since we need only two subnets, we need 21 subnet bits. In our case, this means that we will take one bit from the host part. Here is the calculation:
+1. Since we need only two subnets, we need 2<sup>1</sup> subnet bits. In our case, this means that we will take one bit from the host part. Here is the calculation:
  
 First, we have a class C address 192.168.0.0 with the subnet mask of 24. Let’s convert them to binary:
 
@@ -156,7 +156,7 @@ We need to take a single zero from the host part of the subnet mask. Here is our
 
 Remember, the ones in the subnet mask represent the network.
 
-2. We need 50 hosts per subnet. Since we took one bit from the host part, we are left with seven bits for the hosts. Is it enough for 50 hosts? The formula to calculate the number of hosts is 2^y – 2, with **y** representing the number of host bits. Since 27 – 2 is 126, we have more than enough bits for our hosts.
+2. We need 50 hosts per subnet. Since we took one bit from the host part, we are left with seven bits for the hosts. Is it enough for 50 hosts? The formula to calculate the number of hosts is 2<sup>y</sup> – 2, with **y** representing the number of host bits. Since 2<sup>7</sup> – 2 is 126, we have more than enough bits for our hosts.
 
 3. Our network will look like this:
 
